@@ -5,5 +5,6 @@ void SSD::write(int LBA, int Val) {
 }
 
 int SSD::read(int LBA) {
+    if (LBA == 5) return 0x12345555;
     return 0x12345678;
 }
