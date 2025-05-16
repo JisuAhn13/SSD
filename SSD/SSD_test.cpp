@@ -33,6 +33,24 @@ TEST(SDDFunctionTest, ReadLBA5) {
     EXPECT_EQ(Writed_Val, Val);
 }
 
+TEST(SDDFunctionTest, ReadValueChangeLBA) {
+    SSD ssd;
+
+    int Val = 0x12347777;
+    int LBA = 7;
+    int Writed_Val;
+
+    ssd.write(LBA, Val);
+
+    Writed_Val = ssd.read(LBA);
+
+    Val = 0x12377777;
+    ssd.write(LBA, Val);
+
+    Writed_Val = ssd.read(LBA);
+
+    EXPECT_EQ(Writed_Val, Val);
+}
 #if 0
 TEST(SDDFunctionTest, WriteSuccess) {
     SSD ssd;
