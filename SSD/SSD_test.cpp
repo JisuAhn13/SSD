@@ -59,6 +59,24 @@ TEST_F(SSDReadFunctionTest, InvalideLBAFails) {
     EXPECT_THROW(ssd->read(lbaID), std::exception);
 }
 
+TEST_F(SSDReadFunctionTest, readOutputFileAndCompare) {
+    setReadTestValue(15, 0x15151515);
+
+    ssd->write(lbaID, data);
+
+    EXPECT_EQ(ssd->read(lbaID), data);
+
+    std::stringstream ss;
+    std::ifstream inFile("ssd_output.txt");
+
+    uint readData = ssd->readDataFromLBA(inFile, 15);
+    ss << lbaID << " 0x" << std::uppercase << std::setfill('0') << std::setw(8)
+        << std::hex << readData;
+    inFile.close();
+
+    EXPECT_EQ(ss.str() , "15 0x15151515");
+}
+
 #if 0
 TEST(SDDFunctionTest, WriteSuccess) {
     SSD ssd;

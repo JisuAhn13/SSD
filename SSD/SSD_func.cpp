@@ -12,11 +12,13 @@ void removeHexPrefix(std::string& data)
     }
 }
 
-
 void validateFileOpen(std::ifstream& inFile)
 {
     if (!inFile) {
         std::cerr << "can't open file" << std::endl;
+#ifdef UNIT_TEST_WITHOUT_WRITE
+        std::cerr << "check your testLBA.txt file is valid" << std::endl;
+#endif
         throw(std::exception());
     }
 }
@@ -24,8 +26,10 @@ void validateFileOpen(std::ifstream& inFile)
 /*
 * Find LBA in File and return data
 */
-uint readDataFromLBA(std::ifstream& inFile, const uint& LBA)
+uint SSD::readDataFromLBA(std::ifstream& inFile, const uint& LBA)
 {
+    validateFileOpen(inFile);
+
     std::string line, data;
     int readLBA;
     while (std::getline(inFile, line)) {
@@ -45,6 +49,23 @@ void checkLBAValidity(uint LBA) {
         throw std::exception();
     }
 }
+
+void recordFile(uint LBA, uint data) {
+    // overwrite mode
+    std::ofstream outfile("ssd_output.txt", std::ios::trunc);
+    if (!outfile.is_open()) {
+        std::cerr << "Failed to open file for writing.\n";
+        return;
+    }
+
+    // outfile : LBA 0x + Data
+    outfile << LBA << " 0x"
+        << std::uppercase << std::setfill('0') << std::setw(8)
+        << std::hex << data << std::endl;
+
+    outfile.close();
+}
+
 void SSD::write(uint LBA, uint Val) {
     return;
 }
@@ -56,7 +77,10 @@ uint SSD::read(uint LBA) {
     std::ifstream inFile("ssd_nand.txt");
 #endif 
     checkLBAValidity(LBA);
-    validateFileOpen(inFile);
 
-    return readDataFromLBA(inFile, LBA);
+    uint readData = readDataFromLBA(inFile, LBA);
+    inFile.close();
+
+    recordFile(LBA, readData);
+    return readData;
 }
