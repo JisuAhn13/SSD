@@ -4,8 +4,11 @@
 #include <sstream>
 #include <string>
 
+#define UNIT_TEST_WITHOUT_WRITE
+typedef unsigned int uint;
+
 class SSD {
 public:
-    void write(int LBA, int Val);
-    int read(int LBA);
+    void write(uint LBA, uint Val);
+    uint read(uint LBA);
 };

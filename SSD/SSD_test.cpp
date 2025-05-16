@@ -4,53 +4,53 @@
 #include "SSD_func.h"
 using namespace testing;
 
+class SSDReadFunctionTest : public Test {
+protected:
+    std::unique_ptr<SSD> ssd;
+    uint data;
+    uint lbaID;
 
-TEST(SDDFunctionTest, ReadLBA3) {
-    SSD ssd;
+    void SetUp() override {
+        ssd = std::make_unique<SSD>();
 
-    int Val = 0x12345678;
-    int LBA = 3;
-    int Writed_Val;
+    }
+    void setReadTestValue(uint lbaID, uint data) {
+        this->lbaID = lbaID;
+        this->data = data;
+    }
+    
+};
 
-    ssd.write(LBA, Val);
+TEST_F(SSDReadFunctionTest, ReadLBA3) {
+    setReadTestValue(3, 0x12345678);
+    
+    ssd->write(lbaID, data);
 
-    Writed_Val = ssd.read(LBA);
-
-    EXPECT_EQ(Writed_Val, Val);
+    EXPECT_EQ(ssd->read(lbaID), data);
 }
 
-TEST(SDDFunctionTest, ReadLBA5) {
-    SSD ssd;
+TEST_F(SSDReadFunctionTest, ReadLBA5) {
+    setReadTestValue(5, 0x12345555);
 
-    int Val = 0x12345555;
-    int LBA = 5;
-    int Writed_Val;
+    ssd->write(lbaID, data);
 
-    ssd.write(LBA, Val);
-
-    Writed_Val = ssd.read(LBA);
-
-    EXPECT_EQ(Writed_Val, Val);
+    EXPECT_EQ(ssd->read(lbaID), data);
 }
 
-TEST(SDDFunctionTest, ReadValueChangeLBA) {
-    SSD ssd;
+TEST_F(SSDReadFunctionTest, ReadValueChangeLBA) {
+    setReadTestValue(7, 0x12347777);
+    ssd->write(lbaID, data);
 
-    int Val = 0x12347777;
-    int LBA = 7;
-    int Writed_Val;
+    //it will work on ssd_nand.txt file 
+#ifndef UNIT_TEST_WITHOUT_WRITE
+    EXPECT_EQ(ssd->read(lbaID), data);
+#endif
+    setReadTestValue(7, 0x12377777);
 
-    ssd.write(LBA, Val);
-
-    Writed_Val = ssd.read(LBA);
-
-    Val = 0x12377777;
-    ssd.write(LBA, Val);
-
-    Writed_Val = ssd.read(LBA);
-
-    EXPECT_EQ(Writed_Val, Val);
+    ssd->write(lbaID, data);
+    EXPECT_EQ(ssd->read(lbaID), data);
 }
+
 #if 0
 TEST(SDDFunctionTest, WriteSuccess) {
     SSD ssd;
