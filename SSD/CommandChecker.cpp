@@ -17,3 +17,8 @@ bool CommandChecker::isValidOperator(std::string op)
 
 	return false;
 }
+
+bool CommandChecker::isValidAddress(std::string addr)
+{
+	return false;
+}

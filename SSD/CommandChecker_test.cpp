@@ -44,3 +44,29 @@ TEST(CommandCheckerTest, ReadOperator)
 	EXPECT_TRUE(checker.isValidOperator(op));
 }
 
+TEST(CommandCheckerTest, InvalidAddressPrefix)
+{
+	CommandChecker checker;
+
+	std::string addr = "12345678";
+
+	EXPECT_FALSE(checker.isValidAddress(addr));
+}
+
+TEST(CommandCheckerTest, InvalidLongAddress)
+{
+	CommandChecker checker;
+
+	std::string addr = "0x1234567890";
+
+	EXPECT_FALSE(checker.isValidAddress(addr));
+}
+
+TEST(CommandCheckerTest, InvalidShortAddress)
+{
+	CommandChecker checker;
+
+	std::string addr = "0x1234";
+
+	EXPECT_FALSE(checker.isValidAddress(addr));
+}
