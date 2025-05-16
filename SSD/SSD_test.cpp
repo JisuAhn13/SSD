@@ -59,6 +59,8 @@ TEST(SDDFunctionTest, WriteSuccess) {
 
     const std::string filename = "ssd_nand.txt";
 
+    ssd.write(LBA, Val);
+
     std::ifstream file(filename);
     ASSERT_TRUE(file.is_open());
 
