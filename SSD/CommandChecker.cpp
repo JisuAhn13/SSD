@@ -2,28 +2,18 @@
 
 bool CommandChecker::isValidRange(int LBA)
 {
-	if (LBA == 100) {
-		return false;
-	}
-
-	if (LBA == 10) {
+	if (LBA >= 0 && LBA < 100) {
 		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool CommandChecker::isValidOperator(std::string op)
 {
-	if (op == "E") {
-		return false;
-	}
-
-	if (op == "W") {
+	if (op == "W" || op == "R") {
 		return true;
 	}
 
-	if (op == "R") {
-		return true;
-	}
+	return false;
 }
