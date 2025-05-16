@@ -1,6 +1,6 @@
 #include "CommandChecker.h"
 
-bool CommandChecker::isValidRange(int LBA)
+bool CommandChecker::isValidRange(unsigned int LBA)
 {
 	if (LBA >= 0 && LBA < 100) {
 		return true;
