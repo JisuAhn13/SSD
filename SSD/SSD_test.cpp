@@ -51,6 +51,14 @@ TEST_F(SSDReadFunctionTest, ReadValueChangeLBA) {
     EXPECT_EQ(ssd->read(lbaID), data);
 }
 
+TEST_F(SSDReadFunctionTest, InvalideLBAFails) {
+    setReadTestValue(100, 0x12345678);
+
+    ssd->write(lbaID, data);
+
+    EXPECT_THROW(ssd->read(lbaID), std::exception);
+}
+
 #if 0
 TEST(SDDFunctionTest, WriteSuccess) {
     SSD ssd;

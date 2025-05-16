@@ -36,10 +36,15 @@ uint readDataFromLBA(std::ifstream& inFile, const uint& LBA)
         }
     }
     std::cerr << "search Fail" << std::endl;
-    std::exception();
+    throw std::exception();
 }
 
-
+void checkLBAValidity(uint LBA) {
+    if (LBA < 0 || LBA > 99) {
+        std::cerr << "invalide LBA Address Fail" << std::endl;
+        throw std::exception();
+    }
+}
 void SSD::write(uint LBA, uint Val) {
     return;
 }
@@ -50,7 +55,7 @@ uint SSD::read(uint LBA) {
 #else
     std::ifstream inFile("ssd_nand.txt");
 #endif 
-
+    checkLBAValidity(LBA);
     validateFileOpen(inFile);
 
     return readDataFromLBA(inFile, LBA);
