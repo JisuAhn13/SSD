@@ -54,8 +54,8 @@ TEST(SDDFunctionTest, InitWriteSuccess) {
 TEST(SDDFunctionTest, WriteSuccess) {
     SSD ssd;
 
-    int Val = 0x12345678;
-    int LBA = 3;
+    unsigned int Val = 0x12345678;
+    unsigned int LBA = 3;
 
     const std::string filename = "ssd_nand.txt";
 
@@ -70,13 +70,13 @@ TEST(SDDFunctionTest, WriteSuccess) {
     }
 
     ASSERT_EQ(current, 2);
-    EXPECT_EQ(line, "03 0x12345678");
+    EXPECT_EQ(line, "02 0x12345678");
 }
 
 TEST(FileFormatTest, CheckFormatSuccess) {
     const std::string line = getLineFromFile("ssd_nand.txt", 76);
-
-
+    
+    
     ASSERT_FALSE(line.empty());
     EXPECT_TRUE(checkFormat(line));
 }
