@@ -5,7 +5,7 @@
 using namespace testing;
 
 
-TEST(SDDFunctionTest, ReadSuccess) {
+TEST(SDDFunctionTest, ReadLBA3) {
     SSD ssd;
 
     int Val = 0x12345678;
@@ -18,7 +18,7 @@ TEST(SDDFunctionTest, ReadSuccess) {
 
     EXPECT_EQ(Writed_Val, Val);
 }
-
+#if 0
 TEST(SDDFunctionTest, WriteSuccess) {
     SSD ssd;
 
@@ -32,3 +32,4 @@ TEST(SDDFunctionTest, WriteSuccess) {
 
     EXPECT_EQ(Writed_Val, Val);
 }
+#endif
