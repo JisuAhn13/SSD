@@ -1,4 +1,5 @@
 #include "CommandChecker.h"
+#include <regex>
 
 bool CommandChecker::isValidRange(unsigned int LBA)
 {
@@ -20,5 +21,6 @@ bool CommandChecker::isValidOperator(std::string op)
 
 bool CommandChecker::isValidAddress(std::string addr)
 {
-	return false;
+	std::regex pattern(R"(^0x[0-9A-Fa-f]{8}$)");
+	return std::regex_match(addr, pattern);
 }

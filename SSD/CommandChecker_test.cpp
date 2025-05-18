@@ -57,7 +57,7 @@ TEST(CommandCheckerTest, InvalidLongAddress)
 {
 	CommandChecker checker;
 
-	std::string addr = "0x1234567890";
+	std::string addr = "0x12345678ab";
 
 	EXPECT_FALSE(checker.isValidAddress(addr));
 }
@@ -69,4 +69,13 @@ TEST(CommandCheckerTest, InvalidShortAddress)
 	std::string addr = "0x1234";
 
 	EXPECT_FALSE(checker.isValidAddress(addr));
+}
+
+TEST(CommandCheckerTest, ValidAddress)
+{
+	CommandChecker checker;
+
+	std::string addr = "0x1234abcd";
+
+	EXPECT_TRUE(checker.isValidAddress(addr));
 }
