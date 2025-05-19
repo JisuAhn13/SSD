@@ -5,7 +5,7 @@
 #include <string>
 #include <iomanip>
 #include <vector>
-
+#include <regex>
 typedef unsigned int uint;
 
 class SSD {
