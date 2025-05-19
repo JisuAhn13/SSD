@@ -1,6 +1,7 @@
 #include "gmock/gmock.h"
 #include "CommandChecker.h"
 #include <string>
+#include <fstream>
 using namespace testing;
 
 TEST(CommandCheckerTest, InvalidRange)
@@ -78,4 +79,16 @@ TEST(CommandCheckerTest, ValidAddress)
 	std::string addr = "0x1234abcd";
 
 	EXPECT_TRUE(checker.isValidAddress(addr));
+}
+
+TEST(CommandCheckerTest, InvalidExecute)
+{
+	CommandChecker checker;
+
+	std::string op = "W";
+	std::string lba = "1";
+	std::string addr = "0x1234abcd";
+	char* argv[] = { &op[0], &op[1], &op[2]};
+
+	EXPECT_THROW({ checker.execute(4, argv); }, std::exception());
 }
