@@ -1,7 +1,5 @@
 #include "gmock/gmock.h"
 #include "CommandChecker.h"
-#include <string>
-#include <fstream>
 using namespace testing;
 
 class CommandFixture : public Test {

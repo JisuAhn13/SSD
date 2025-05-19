@@ -4,12 +4,14 @@
 using namespace testing;
 
 int main(int argc, char* argv[]) {
-    
+
+#ifdef UNIT_TEST
+    InitGoogleMock();
+    return RUN_ALL_TESTS();
+#endif
     CommandChecker commandchecker;
     commandchecker.execute(argc, argv);
     
 
     return 0;
-    //InitGoogleMock();
-    //return RUN_ALL_TESTS();
 }
