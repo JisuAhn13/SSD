@@ -125,9 +125,9 @@ void SSD::write(unsigned int LBA, unsigned int Val) {
     infile.close();
 
     std::ostringstream newline;
-    newline << std::setw(2) << std::setfill('0') << std::dec << LBA - 1
+    newline << std::setw(2) << std::setfill('0') << std::dec << LBA
         << " 0x" << std::setw(8) << std::setfill('0') << std::uppercase <<std::hex << Val;
-    lines[LBA - 1] = newline.str();
+    lines[LBA] = newline.str();
 
     std::ofstream outfile(filename);
     for (const auto& l : lines) {
