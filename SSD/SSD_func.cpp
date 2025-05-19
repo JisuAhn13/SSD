@@ -41,7 +41,7 @@ uint SSD::readDataFromLBA(std::ifstream& inFile, const uint& LBA)
         if (iss >> readLBA >> data && readLBA == LBA) {
             removeHexPrefix(data);
             if (data.empty())return 0;
-            return std::stol(data, nullptr, 16);
+            return std::stoll(data, nullptr, 16);
         }
     }
     std::cerr << "search Fail" << std::endl;
