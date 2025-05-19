@@ -126,12 +126,12 @@ TEST(SDDFunctionTest, WriteSuccess) {
     std::string line;
     int current = 0;
     while (std::getline(file, line)) {
-        if (current == 2) break;
+        if (current == LBA) break;
         ++current;
     }
 
-    ASSERT_EQ(current, 2);
-    EXPECT_EQ(line, "02 0x12345678");
+    ASSERT_EQ(current, LBA);
+    EXPECT_EQ(line, "03 0x12345678");
 }
 
 TEST(FileFormatTest, CheckFormatSuccess) {

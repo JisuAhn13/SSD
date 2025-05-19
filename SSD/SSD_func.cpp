@@ -16,9 +16,6 @@ void validateFileOpen(std::ifstream& inFile)
 {
     if (!inFile) {
         std::cerr << "can't open file" << std::endl;
-#ifdef UNIT_TEST_WITHOUT_WRITE
-        std::cerr << "check your testLBA.txt file is valid" << std::endl;
-#endif
         throw(std::exception());
     }
 }
@@ -72,11 +69,7 @@ void SSD::recordFile(uint LBA, uint data) {
 }
 
 uint SSD::read(uint LBA) {
-#ifdef UNIT_TEST_WITHOUT_WRITE
-    std::ifstream inFile("testLBA.txt");
-#else
-    std::ifstream inFile("ssd_nand.txt");
-#endif 
+    std::ifstream inFile(this->getFileName());
     checkLBAValidity(LBA);
 
     uint readData = readDataFromLBA(inFile, LBA);
@@ -125,9 +118,9 @@ void SSD::write(unsigned int LBA, unsigned int Val) {
     infile.close();
 
     std::ostringstream newline;
-    newline << std::setw(2) << std::setfill('0') << std::dec << LBA - 1
+    newline << std::setw(2) << std::setfill('0') << std::dec << LBA
         << " 0x" << std::setw(8) << std::setfill('0') << std::uppercase <<std::hex << Val;
-    lines[LBA - 1] = newline.str();
+    lines[LBA] = newline.str();
 
     std::ofstream outfile(filename);
     for (const auto& l : lines) {

@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <vector>
 
-#define UNIT_TEST_WITHOUT_WRITE
 typedef unsigned int uint;
 
 class SSD {
