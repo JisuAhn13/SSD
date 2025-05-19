@@ -5,52 +5,58 @@
 
 bool CommandChecker::execute(int argc, char* argv[])
 {
-	std::string op = std::string(argv[1]);
-	std::string lba = std::string(argv[2]);
-	std::string value;
-	if (op == "W") {
-		value = std::string(argv[3]);
-	}
-	const std::string filename = "ssd_output.txt";
-
 	if (argc > 4) {
 		return false;
 	}
+
+	std::string op = std::string(argv[1]);
+	std::string lba = std::string(argv[2]);
 
 	if (isValidOperator(op) == false) {
 		return false;
 	}
 
 	if (isValidRange(std::stoi(lba)) == false) {
-		std::ofstream fs;
-		fs.open(filename);
-		fs.clear();
-		fs << "ERROR";
-		fs.close();
+		writeOutputFile();
 		return false;
 	}
 
-	SSD ssd;
-	std::string op_read = "R";
-	std::string op_write = "W";
-
 	if (op == op_write) {
-		if (isValidAddress(value) == false) {
-			return false;
-		}
+		std::string value = std::string(argv[3]);
+		return executeWrite(lba, value);
 	}
 
 	if (op == op_read) {
-		ssd.read((unsigned int)std::stoi(lba));
+		return executeRead(lba);
 	}
-	else if (op == op_write) {
-		ssd.write((unsigned int)std::stoi(lba), (unsigned int)std::stoll(value.substr(2), nullptr, 16));
-	}
-	else {
+
+	return false;
+}
+
+bool CommandChecker::executeRead(std::string lba)
+{
+	ssd.read((unsigned int)std::stoi(lba));
+	return true;
+}
+
+bool CommandChecker::executeWrite(std::string lba , std::string addr)
+{
+	if (isValidAddress(addr) == false) {
 		return false;
 	}
 
+	ssd.write((unsigned int)std::stoi(lba), (unsigned int)std::stoll(addr.substr(2), nullptr, 16));
+
 	return true;
+}
+
+void CommandChecker::writeOutputFile()
+{
+	std::ofstream fs;
+	fs.open(output_filename);
+	fs.clear();
+	fs << "ERROR";
+	fs.close();
 }
 
 bool CommandChecker::isValidRange(unsigned int LBA)
