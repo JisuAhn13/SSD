@@ -1,5 +1,47 @@
 #include "CommandChecker.h"
+#include "SSD_func.h"
+#include <fstream>
 #include <regex>
+
+void CommandChecker::execute(int argc, char* argv[])
+{
+	std::string op = std::string(argv[0]);
+	std::string lba = std::string(argv[1]);
+	std::string value = std::string(argv[2]);
+	const std::string filename = "ssd_output.txt";
+
+	if (argc > 3) {
+		throw std::exception();
+	}
+
+	if (isValidOperator(op) == false) {
+		throw std::exception();
+	}
+
+	if (isValidRange(std::stoi(lba) == false)) {
+		std::ofstream fs;
+		fs.open(filename);
+		fs.clear();
+		fs << "ERROR";
+		fs.close();
+		return;
+	}
+
+	if (isValidAddress(value) == false) {
+		throw std::exception();
+	}
+	
+	SSD ssd;
+	std::string op_read = "R";
+	std::string op_write = "W";
+
+	if (op == op_read) {
+		ssd.read(std::stoi(lba));
+	}
+	else if (op == op_write) {
+		ssd.write(std::stoi(lba), std::stoi(value));
+	}
+}
 
 bool CommandChecker::isValidRange(unsigned int LBA)
 {
