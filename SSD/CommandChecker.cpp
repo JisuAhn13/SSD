@@ -18,7 +18,7 @@ bool CommandChecker::execute(int argc, char* argv[])
 		return false;
 	}
 
-	if (isValidRange(std::stoi(lba) == false)) {
+	if (isValidRange(std::stoi(lba)) == false) {
 		std::ofstream fs;
 		fs.open(filename);
 		fs.clear();
@@ -30,7 +30,7 @@ bool CommandChecker::execute(int argc, char* argv[])
 	if (isValidAddress(value) == false) {
 		return false;
 	}
-	
+
 	SSD ssd;
 	std::string op_read = "R";
 	std::string op_write = "W";
@@ -39,7 +39,7 @@ bool CommandChecker::execute(int argc, char* argv[])
 		ssd.read(std::stoi(lba));
 	}
 	else if (op == op_write) {
-		ssd.write(std::stoi(lba), std::stoi(value));
+		ssd.write(std::stoi(lba), std::stoi(value.substr(2), nullptr, 16));
 	}
 	else {
 		return false;
