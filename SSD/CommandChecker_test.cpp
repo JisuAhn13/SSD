@@ -10,19 +10,19 @@ public:
 
 	}
 
-	const std::string op_invalid = "E";
-	const std::string op_read = "R";
-	const std::string op_write = "W";
+	std::string op_invalid = "E";
+	std::string op_read = "R";
+	std::string op_write = "W";
 
-	const std::string addr_wrong_format = "12345678";
-	const std::string addr_short = "0x1234";
-	const std::string addr_long = "0x12345678ab";
-	const std::string addr = "0x1234abcd";
+	std::string addr_wrong_format = "12345678";
+	std::string addr_short = "0x1234";
+	std::string addr_long = "0x12345678ab";
+	std::string addr = "0x1234abcd";
 
-	const std::string lba_invalid = "100";
-	const std::string lba = "1";
+	std::string lba_invalid = "100";
+	std::string lba = "1";
 
-	const std::string exe = "ssd.exe";
+	std::string exe = "ssd.exe";
 
 	CommandChecker checker;
 };
