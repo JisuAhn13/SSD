@@ -3,7 +3,7 @@
 #include <fstream>
 #include <regex>
 
-void CommandChecker::execute(int argc, char* argv[])
+bool CommandChecker::execute(int argc, char* argv[])
 {
 	std::string op = std::string(argv[1]);
 	std::string lba = std::string(argv[2]);
@@ -11,11 +11,11 @@ void CommandChecker::execute(int argc, char* argv[])
 	const std::string filename = "ssd_output.txt";
 
 	if (argc > 4) {
-		throw std::exception();
+		return false;
 	}
 
 	if (isValidOperator(op) == false) {
-		throw std::exception();
+		return false;
 	}
 
 	if (isValidRange(std::stoi(lba) == false)) {
@@ -24,11 +24,11 @@ void CommandChecker::execute(int argc, char* argv[])
 		fs.clear();
 		fs << "ERROR";
 		fs.close();
-		return;
+		return false;
 	}
 
 	if (isValidAddress(value) == false) {
-		throw std::exception();
+		return false;
 	}
 	
 	SSD ssd;
@@ -41,6 +41,11 @@ void CommandChecker::execute(int argc, char* argv[])
 	else if (op == op_write) {
 		ssd.write(std::stoi(lba), std::stoi(value));
 	}
+	else {
+		return false;
+	}
+
+	return true;
 }
 
 bool CommandChecker::isValidRange(unsigned int LBA)
