@@ -105,7 +105,7 @@ std::string getLineFromFile(const std::string& filename, int lineNumber) {
 
 TEST(SDDFunctionTest, InitSSDSuccess) {
     SSD ssd;
-    const std::string filename = ssd.getFileName();
+    const std::string filename = ssd.getDataFileName();
 
     ASSERT_TRUE(fileExists(filename));
 }
@@ -116,7 +116,7 @@ TEST(SDDFunctionTest, WriteSuccess) {
     unsigned int Val = 0x12345678;
     unsigned int LBA = 3;
 
-    const std::string filename = ssd.getFileName();
+    const std::string filename = ssd.getDataFileName();
 
     ssd.write(LBA, Val);
 
@@ -136,7 +136,7 @@ TEST(SDDFunctionTest, WriteSuccess) {
 
 TEST(FileFormatTest, CheckFormatSuccess) {
     SSD ssd;
-    const std::string line = getLineFromFile(ssd.getFileName(), 76);
+    const std::string line = getLineFromFile(ssd.getDataFileName(), 76);
 
 
     ASSERT_FALSE(line.empty());

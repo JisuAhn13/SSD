@@ -1,10 +1,6 @@
 #include "SSD_func.h"
-
 using namespace std;
 
-/*
-* Function to remove the "0x" prefix from hex strings
-*/
 void removeHexPrefix(std::string& data)
 {
     if (data.rfind("0x", 0) == 0) {
@@ -27,9 +23,6 @@ void checkLBAValidity(uint LBA) {
     }
 }
 
-/*
-* Find LBA in File and return data
-*/
 uint SSD::readDataFromLBA(std::ifstream& inFile, const uint& LBA)
 {
     validateFileOpen(inFile);
@@ -53,14 +46,12 @@ std::string SSD::getOuputFileName() {
 }
 
 void SSD::recordFile(uint LBA, uint data) {
-    // overwrite 
     std::ofstream outfile(getOuputFileName(), std::ios::trunc);
     if (!outfile.is_open()) {
         std::cerr << "Failed to open file for writing.\n";
         return;
     }
 
-    // outfile : LBA 0x + Data
     outfile << "0x"
         << std::uppercase << std::setfill('0') << std::setw(8)
         << std::hex << data << std::endl;
@@ -69,7 +60,7 @@ void SSD::recordFile(uint LBA, uint data) {
 }
 
 uint SSD::read(uint LBA) {
-    std::ifstream inFile(this->getFileName());
+    std::ifstream inFile(this->getDataFileName());
     checkLBAValidity(LBA);
 
     uint readData = readDataFromLBA(inFile, LBA);
@@ -80,7 +71,7 @@ uint SSD::read(uint LBA) {
 }
 
 SSD::SSD() {
-    std::string filename = this->getFileName();
+    std::string filename = this->getDataFileName();
 
     std::ifstream checkFile(filename);
     if (checkFile.good()) return;
@@ -100,12 +91,12 @@ SSD::SSD() {
     return;
 }
 
-std::string SSD::getFileName() {
-    return this->filename;
+std::string SSD::getDataFileName() {
+    return this->DataFile;
 }
 
 void SSD::write(unsigned int LBA, unsigned int Val) {
-    const std::string filename = this->getFileName();
+    const std::string filename = this->getDataFileName();
 
     std::ifstream infile(filename);
     if (!infile.is_open()) return;

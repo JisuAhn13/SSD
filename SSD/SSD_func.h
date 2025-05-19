@@ -11,14 +11,14 @@ typedef unsigned int uint;
 class SSD {
 public:
     SSD();
-    std::string getFileName();
+    std::string getDataFileName();
+    std::string getOuputFileName();
     void write(uint LBA, uint Val);
     uint read(uint LBA);
     uint readDataFromLBA(std::ifstream& inFile, const uint& LBA);
-    std::string getOuputFileName();
     void recordFile(uint LBA, uint data);
 
 private:
     const std::string outputFile = "ssd_output.txt";
-    const std::string filename = "ssd_nand.txt";
+    const std::string DataFile = "ssd_nand.txt";
 };
