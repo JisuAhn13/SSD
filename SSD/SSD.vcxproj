@@ -127,6 +127,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CommandChecker.cpp" />
+    <ClCompile Include="CommandChecker_test.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SSD_func.cpp" />
     <ClCompile Include="SSD_test.cpp" />
@@ -135,6 +137,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommandChecker.h" />
     <ClInclude Include="SSD_func.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
