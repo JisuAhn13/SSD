@@ -16,9 +16,6 @@ void validateFileOpen(std::ifstream& inFile)
 {
     if (!inFile) {
         std::cerr << "can't open file" << std::endl;
-#ifdef UNIT_TEST_WITHOUT_WRITE
-        std::cerr << "check your testLBA.txt file is valid" << std::endl;
-#endif
         throw(std::exception());
     }
 }
@@ -72,11 +69,7 @@ void SSD::recordFile(uint LBA, uint data) {
 }
 
 uint SSD::read(uint LBA) {
-#ifdef UNIT_TEST_WITHOUT_WRITE
-    std::ifstream inFile("testLBA.txt");
-#else
-    std::ifstream inFile("ssd_nand.txt");
-#endif 
+    std::ifstream inFile(this->getFileName());
     checkLBAValidity(LBA);
 
     uint readData = readDataFromLBA(inFile, LBA);
