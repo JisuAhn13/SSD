@@ -1,7 +1,13 @@
 #include "SSD_func.h"
 
 SSD::SSD() {
-    std::ofstream ofs(this->getFileName());
+    std::string filename = this->getFileName();
+
+    std::ifstream checkFile(filename);
+    if (checkFile.good()) return;
+    checkFile.close();
+
+    std::ofstream ofs(filename);
     if (!ofs.is_open()) return;
 
     for (int i = 0; i < 100; ++i) {

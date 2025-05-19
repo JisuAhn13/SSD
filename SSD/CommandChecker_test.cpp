@@ -81,14 +81,41 @@ TEST(CommandCheckerTest, ValidAddress)
 	EXPECT_TRUE(checker.isValidAddress(addr));
 }
 
-TEST(CommandCheckerTest, InvalidExecute)
+TEST(CommandCheckerTest, ExecuteWithInvalidArgc)
 {
 	CommandChecker checker;
 
+	std::string exe = "ssd.exe";
 	std::string op = "W";
 	std::string lba = "1";
 	std::string addr = "0x1234abcd";
-	char* argv[] = { &op[0], &op[1], &op[2]};
+	char* argv[] = { &exe[0],  & op[0], &lba[0], &addr[0]};
 
-	EXPECT_THROW({ checker.execute(4, argv); }, std::exception());
+	EXPECT_FALSE(checker.execute(5, argv));
+}
+
+TEST(CommandCheckerTest, ExecuteWithInvalidOperator)
+{
+	CommandChecker checker;
+
+	std::string exe = "ssd.exe";
+	std::string op = "E";
+	std::string lba = "100";
+	std::string addr = "0x1234abcd";
+	char* argv[] = { &exe[0], &op[0], &lba[0], &addr[0] };
+
+	EXPECT_FALSE(checker.execute(4, argv));
+}
+
+TEST(CommandCheckerTest, ExecuteWithInvalidLba)
+{
+	CommandChecker checker;
+
+	std::string exe = "ssd.exe";
+	std::string op = "W";
+	std::string lba = "100";
+	std::string addr = "0x1234abcd";
+	char* argv[] = { &exe[0], &op[0], &lba[0], &addr[0]};
+
+	EXPECT_FALSE(checker.execute(4, argv));
 }
