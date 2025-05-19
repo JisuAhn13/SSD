@@ -4,118 +4,94 @@
 #include <fstream>
 using namespace testing;
 
-TEST(CommandCheckerTest, InvalidRange)
-{
-	CommandChecker checker;
+class CommandFixture : public Test {
+public:
+	void SetUp() override {
 
+	}
+
+	const std::string op_invalid = "E";
+	const std::string op_read = "R";
+	const std::string op_write = "W";
+
+	const std::string addr_wrong_format = "12345678";
+	const std::string addr_short = "0x1234";
+	const std::string addr_long = "0x12345678ab";
+	const std::string addr = "0x1234abcd";
+
+	const std::string lba_invalid = "100";
+	const std::string lba = "1";
+
+	const std::string exe = "ssd.exe";
+
+	CommandChecker checker;
+};
+
+TEST_F(CommandFixture,InvalidRange)
+{
 	EXPECT_FALSE(checker.isValidRange(100));
 }
 
-TEST(CommandCheckerTest, ValidRange)
+TEST_F(CommandFixture,ValidRange)
 {
-	CommandChecker checker;
-
 	EXPECT_TRUE(checker.isValidRange(10));
 }
 
-TEST(CommandCheckerTest, InvalidOperator)
+TEST_F(CommandFixture,InvalidOperator)
 {
-	CommandChecker checker;
-
-	std::string op = "E";
-
-	EXPECT_FALSE(checker.isValidOperator(op));
+	EXPECT_FALSE(checker.isValidOperator(op_invalid));
 }
 
-TEST(CommandCheckerTest, WriteOperator)
+TEST_F(CommandFixture,WriteOperator)
 {
-	CommandChecker checker;
-
-	std::string op = "W";
-
-	EXPECT_TRUE(checker.isValidOperator(op));
+	EXPECT_TRUE(checker.isValidOperator(op_write));
 }
 
-TEST(CommandCheckerTest, ReadOperator)
+TEST_F(CommandFixture,ReadOperator)
 {
-	CommandChecker checker;
-
-	std::string op = "R";
-
-	EXPECT_TRUE(checker.isValidOperator(op));
+	EXPECT_TRUE(checker.isValidOperator(op_read));
 }
 
-TEST(CommandCheckerTest, InvalidAddressPrefix)
+TEST_F(CommandFixture,InvalidAddressPrefix)
 {
-	CommandChecker checker;
-
-	std::string addr = "12345678";
-
-	EXPECT_FALSE(checker.isValidAddress(addr));
+	EXPECT_FALSE(checker.isValidAddress(addr_wrong_format));
 }
 
-TEST(CommandCheckerTest, InvalidLongAddress)
+TEST_F(CommandFixture,InvalidLongAddress)
 {
-	CommandChecker checker;
-
-	std::string addr = "0x12345678ab";
-
-	EXPECT_FALSE(checker.isValidAddress(addr));
+	EXPECT_FALSE(checker.isValidAddress(addr_long));
 }
 
-TEST(CommandCheckerTest, InvalidShortAddress)
+TEST_F(CommandFixture,InvalidShortAddress)
 {
-	CommandChecker checker;
-
-	std::string addr = "0x1234";
-
-	EXPECT_FALSE(checker.isValidAddress(addr));
+	EXPECT_FALSE(checker.isValidAddress(addr_short));
 }
 
-TEST(CommandCheckerTest, ValidAddress)
+TEST_F(CommandFixture,ValidAddress)
 {
-	CommandChecker checker;
-
-	std::string addr = "0x1234abcd";
-
 	EXPECT_TRUE(checker.isValidAddress(addr));
 }
 
-TEST(CommandCheckerTest, ExecuteWithInvalidArgc)
+TEST_F(CommandFixture,ExecuteWithInvalidArgc)
 {
-	CommandChecker checker;
+	int argc = 5;
+	char* argv[] = { &exe[0], &op_write[0], &lba[0], &addr[0]};
 
-	std::string exe = "ssd.exe";
-	std::string op = "W";
-	std::string lba = "1";
-	std::string addr = "0x1234abcd";
-	char* argv[] = { &exe[0],  & op[0], &lba[0], &addr[0]};
-
-	EXPECT_FALSE(checker.execute(5, argv));
+	EXPECT_FALSE(checker.execute(argc, argv));
 }
 
-TEST(CommandCheckerTest, ExecuteWithInvalidOperator)
+TEST_F(CommandFixture,ExecuteWithInvalidOperator)
 {
-	CommandChecker checker;
+	int argc = 4;
+	char* argv[] = { &exe[0], &op_invalid[0], &lba[0], &addr[0] };
 
-	std::string exe = "ssd.exe";
-	std::string op = "E";
-	std::string lba = "100";
-	std::string addr = "0x1234abcd";
-	char* argv[] = { &exe[0], &op[0], &lba[0], &addr[0] };
-
-	EXPECT_FALSE(checker.execute(4, argv));
+	EXPECT_FALSE(checker.execute(argc, argv));
 }
 
-TEST(CommandCheckerTest, ExecuteWithInvalidLba)
+TEST_F(CommandFixture,ExecuteWithInvalidLba)
 {
-	CommandChecker checker;
+	int argc = 4;
+	char* argv[] = { &exe[0], &op_write[0], &lba_invalid[0], &addr[0]};
 
-	std::string exe = "ssd.exe";
-	std::string op = "W";
-	std::string lba = "100";
-	std::string addr = "0x1234abcd";
-	char* argv[] = { &exe[0], &op[0], &lba[0], &addr[0]};
-
-	EXPECT_FALSE(checker.execute(4, argv));
+	EXPECT_FALSE(checker.execute(argc, argv));
 }
