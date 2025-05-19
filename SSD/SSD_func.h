@@ -6,7 +6,10 @@
 #include <vector>
 class SSD {
 public:
+    SSD();
+    std::string getFileName();
     void write(unsigned int LBA, unsigned int Val);
-    void initwrite();
     int read(int LBA);
+private:
+    const std::string filename = "ssd_nand.txt";
 };

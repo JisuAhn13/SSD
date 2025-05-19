@@ -38,15 +38,9 @@ TEST(SDDFunctionTest, ReadSuccess) {
     EXPECT_EQ(Writed_Val, Val);
 }
 
-TEST(SDDFunctionTest, InitWriteSuccess) {
-    const std::string filename = "ssd_nand.txt";
+TEST(SDDFunctionTest, InitSSDSuccess) {
     SSD ssd;
-
-    if (fileExists(filename)) {
-        std::remove(filename.c_str());
-    }
-
-    ssd.initwrite();
+    const std::string filename = ssd.getFileName();
 
     ASSERT_TRUE(fileExists(filename));
 }
@@ -57,7 +51,7 @@ TEST(SDDFunctionTest, WriteSuccess) {
     unsigned int Val = 0x12345678;
     unsigned int LBA = 3;
 
-    const std::string filename = "ssd_nand.txt";
+    const std::string filename = ssd.getFileName();
 
     ssd.write(LBA, Val);
 
@@ -76,7 +70,8 @@ TEST(SDDFunctionTest, WriteSuccess) {
 }
 
 TEST(FileFormatTest, CheckFormatSuccess) {
-    const std::string line = getLineFromFile("ssd_nand.txt", 76);
+    SSD ssd;
+    const std::string line = getLineFromFile(ssd.getFileName(), 76);
     
     
     ASSERT_FALSE(line.empty());
