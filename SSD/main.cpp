@@ -2,7 +2,7 @@
 #include "SSD_func.h"
 #include "CommandChecker.h"
 using namespace testing;
-#define UNIT_TEST
+
 int main(int argc, char* argv[]) {
 
 #ifdef UNIT_TEST
