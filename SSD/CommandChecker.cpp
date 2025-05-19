@@ -30,13 +30,16 @@ bool CommandChecker::execute(int argc, char* argv[])
 		return false;
 	}
 
-	if (isValidAddress(value) == false) {
-		return false;
-	}
-
 	SSD ssd;
 	std::string op_read = "R";
 	std::string op_write = "W";
+
+	if (op == op_write) {
+		if (isValidAddress(value) == false) {
+			std::cout << "InalidAddress:" << value << std::endl;
+			return false;
+		}
+	}
 
 	if (op == op_read) {
 		ssd.read(std::stoi(lba));
