@@ -7,7 +7,10 @@ bool CommandChecker::execute(int argc, char* argv[])
 {
 	std::string op = std::string(argv[1]);
 	std::string lba = std::string(argv[2]);
-	std::string value = std::string(argv[3]);
+	std::string value;
+	if (op == "W") {
+		value = std::string(argv[3]);
+	}
 	const std::string filename = "ssd_output.txt";
 
 	if (argc > 4) {
