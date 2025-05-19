@@ -36,16 +36,15 @@ bool CommandChecker::execute(int argc, char* argv[])
 
 	if (op == op_write) {
 		if (isValidAddress(value) == false) {
-			std::cout << "InalidAddress:" << value << std::endl;
 			return false;
 		}
 	}
 
 	if (op == op_read) {
-		ssd.read(std::stoi(lba));
+		ssd.read((unsigned int)std::stoi(lba));
 	}
 	else if (op == op_write) {
-		ssd.write(std::stoi(lba), std::stoi(value.substr(2), nullptr, 16));
+		ssd.write((unsigned int)std::stoi(lba), (unsigned int)std::stoll(value.substr(2), nullptr, 16));
 	}
 	else {
 		return false;
