@@ -23,6 +23,12 @@ void validateFileOpen(std::ifstream& inFile)
     }
 }
 
+void checkLBAValidity(uint LBA) {
+    if (LBA < 0 || LBA > 99) {
+        std::cerr << "invalide LBA Address Fail" << std::endl;
+        throw std::exception();
+    }
+}
 /*
 * Find LBA in File and return data
 */
@@ -36,30 +42,28 @@ uint SSD::readDataFromLBA(std::ifstream& inFile, const uint& LBA)
         std::istringstream iss(line);
         if (iss >> readLBA >> data && readLBA == LBA) {
             removeHexPrefix(data);
-            return std::stoi(data, nullptr, 16);
+            if (data.empty())return 0;
+            return std::stol(data, nullptr, 16);
         }
     }
     std::cerr << "search Fail" << std::endl;
     throw std::exception();
 }
 
-void checkLBAValidity(uint LBA) {
-    if (LBA < 0 || LBA > 99) {
-        std::cerr << "invalide LBA Address Fail" << std::endl;
-        throw std::exception();
-    }
+std::string SSD::getOuputFileName() {
+    return this->outputFile;
 }
 
-void recordFile(uint LBA, uint data) {
-    // overwrite mode
-    std::ofstream outfile("ssd_output.txt", std::ios::trunc);
+void SSD::recordFile(uint LBA, uint data) {
+    // overwrite 
+    std::ofstream outfile(getOuputFileName(), std::ios::trunc);
     if (!outfile.is_open()) {
         std::cerr << "Failed to open file for writing.\n";
         return;
     }
 
     // outfile : LBA 0x + Data
-    outfile << LBA << " 0x"
+    outfile << "0x"
         << std::uppercase << std::setfill('0') << std::setw(8)
         << std::hex << data << std::endl;
 

@@ -63,18 +63,25 @@ TEST_F(SSDReadFunctionTest, readOutputFileAndCompare) {
     setReadTestValue(15, 0x15151515);
 
     ssd->write(lbaID, data);
-
     EXPECT_EQ(ssd->read(lbaID), data);
 
-    std::stringstream ss;
     std::ifstream inFile("ssd_output.txt");
+    ASSERT_TRUE(inFile.is_open()) << "Failed to open output file: ssd_output.txt";
 
-    uint readData = ssd->readDataFromLBA(inFile, 15);
-    ss << lbaID << " 0x" << std::uppercase << std::setfill('0') << std::setw(8)
-        << std::hex << readData;
+    std::string line;
+    ASSERT_TRUE(std::getline(inFile, line)) << "Output file is empty or unreadable";
+
     inFile.close();
 
-    EXPECT_EQ(ss.str() , "15 0x15151515");
+    EXPECT_EQ(line, "0x15151515");
+}
+
+TEST_F(SSDReadFunctionTest, ReadUnwrittenLBA20) {
+    setReadTestValue(20, 0x00000000);
+
+    ssd->write(lbaID, data);
+
+    EXPECT_EQ(ssd->read(lbaID), data);
 }
 
 #if 0
