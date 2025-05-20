@@ -43,7 +43,7 @@ protected:
 
         return filename;
     }
-private:
+
     CommandBuffer cmdBuffer;
 };
 
@@ -59,31 +59,31 @@ TEST_F(CmdBufferFixture, full) {
     std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
 
     for (auto c : write_commands) {
-        buffer.enqueue(c);
+        cmdBuffer.enqueue(c);
     }
 
-    EXPECT_TRUE(buffer.full());
+    EXPECT_TRUE(cmdBuffer.full());
 }
 
 TEST_F(CmdBufferFixture, notFull) {
     std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3} };
 
     for (auto c : write_commands) {
-        buffer.enqueue(c);
+        cmdBuffer.enqueue(c);
     }
 
-    EXPECT_FALSE(buffer.full());
+    EXPECT_FALSE(cmdBuffer.full());
 }
 
 TEST_F(CmdBufferFixture, readWithoutOutputFile) {
     std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
 
     for (auto c : write_commands) {
-        buffer.enqueue(c);
+        cmdBuffer.enqueue(c);
     }
 
     command cmd{ CMD_READ, 4, 0 };
-    buffer.enqueue(cmd);
+    cmdBuffer.enqueue(cmd);
 }
 
 TEST_F(CmdBufferFixture, FileWriteSuccess) {

@@ -73,7 +73,7 @@ unsigned int CommandBuffer::enqueue(command cmd)
     // 0. Import buffer files (if not exist, create files)
 
     // 1-1. If buffer is full(size:5), execute all commands
-    if (full()) {
+    if (isFull()) {
         flush();
     }
 
@@ -94,11 +94,6 @@ unsigned int CommandBuffer::enqueue(command cmd)
     }
 
     // 2. Optimize
-    bool ret = readinbuffer(cmd.firstData, value);
-    if (ret == false) {
-        // if data can be decided without reading ssd_nand.txt, then ssd read
-        value = ssd.read(cmd.firstData);
-    }
 
     // 3. Export buffer files
 
@@ -106,12 +101,12 @@ unsigned int CommandBuffer::enqueue(command cmd)
 }
 
 void CommandBuffer::flush() {
-    for (auto c : buffer) {
-        if (c.op == 'W') {
-            ssd.write(c.firstData, c.secondData);
+    for (auto cmd : buffer) {
+        if (cmd.op == 'W') {
+            ssd.write(cmd.firstData, cmd.secondData);
         }
-        else if (c.op == 'E') {
-            ssd.erase(c.firstData, c.secondData);
+        else if (cmd.op == 'E') {
+            ssd.erase(cmd.firstData, cmd.secondData);
         }
         else {
             std::cout << "Invalid Command" << std::endl;
