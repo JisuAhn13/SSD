@@ -19,6 +19,8 @@ public:
     void clearVec();
     void fileWrite();
     void clearDir();
+    void eraseAlgorithm();
+    void mergeAlgorithm();
     void optimizeCMD();
     std::vector<std::string> getFileNamesInDirectory();
 private:
