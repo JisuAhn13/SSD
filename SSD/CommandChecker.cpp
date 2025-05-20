@@ -104,7 +104,7 @@ bool CommandChecker::isValidRange(unsigned int LBA)
 
 bool CommandChecker::isValidOperator(std::string op)
 {
-	if (op == "W" || op == "R") {
+	if (op == "W" || op == "R" || op == "E") {
 		return true;
 	}
 
