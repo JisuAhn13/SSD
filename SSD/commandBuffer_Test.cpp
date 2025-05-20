@@ -54,7 +54,6 @@ void createTestFile(const std::string& fileName, const std::string& content = ""
     std::string filePath = directoryPath + "\\" + fileName;
     if (GetFileAttributesA(directoryPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
         if (!CreateDirectoryA(directoryPath.c_str(), NULL)) {
-            std::cerr << "Failed to create directory: " << directoryPath << std::endl;
             return;
         }
     }
@@ -62,10 +61,6 @@ void createTestFile(const std::string& fileName, const std::string& content = ""
     if (outFile.is_open()) {
         outFile << content;
         outFile.close();
-        std::cout << "Created file: " << filePath << std::endl;
-    }
-    else {
-        std::cerr << "Failed to create file: " << filePath << std::endl;
     }
 }
 
@@ -126,9 +121,6 @@ TEST_F(CmdBufferFixture, readWithoutOutputFile) {
 
 TEST_F(CmdBufferFixture, FileWriteSuccess) {
     std::vector<std::string> filename = WriteandReturn();
-
-    std::cout << filename[0] << std::endl;
-    std::cout << filename[1] << std::endl;
 
     EXPECT_EQ(filename[0], "1_E_1_3.txt");
     EXPECT_EQ(filename[1], "2_E_3_5.txt");

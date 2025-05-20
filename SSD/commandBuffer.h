@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <windows.h>  // CreateDirectoryA 사용
+#include <windows.h>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -12,8 +12,8 @@ enum {
     CMD_ERASE = 'E',
 };
 
-struct command {       // 실행할 명령어를 나타내는 구조체
-    char op;               // 연산자
+struct command {
+    char op;
     uint firstData;
     uint secondData;
 };
@@ -23,6 +23,12 @@ public:
     enum {
         MAX_BUFFER_SIZE = 5,
     };
+
+    void makeEmptyFiles(std::string& baseDir);
+
+    bool fillCommandBufferWithFileNames(void);
+
+    bool createDirectory(std::string& baseDir);
 
     CommandBuffer();
     inline bool isFull() const {
@@ -48,9 +54,8 @@ public:
     command getBufferIndex(int i);
 
 private:
-    // 디렉토리 존재 여부 확인
     bool directoryExists(const std::string& path);
     bool fileExists(const std::string& path);
-    std::vector<command> buffer;  // 여러 명령어를 저장하는 벡터
+    std::vector<command> buffer;
     SSD ssd;
 };

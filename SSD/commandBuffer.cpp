@@ -1,7 +1,6 @@
 #include "commandBuffer.h"
 #include "SSD_func.h"
 
-// 디렉토리 존재 여부 확인
 bool CommandBuffer::directoryExists(const std::string& path) {
     DWORD ftyp = GetFileAttributesA(path.c_str());
     return (ftyp != INVALID_FILE_ATTRIBUTES && (ftyp & FILE_ATTRIBUTE_DIRECTORY));
@@ -40,7 +39,7 @@ command  CommandBuffer::getCommandFromFile(std::string fileName) {
         }
         else if (token.length() >= 2) {
             removeTxt(token);
-            ret.secondData = std::stoul(token, nullptr, 16);  // 16���� ó��
+            ret.secondData = std::stoul(token, nullptr, 16);
         }
     }
     return ret;
@@ -55,21 +54,22 @@ command CommandBuffer::getBufferIndex(int i) {
     return CommandBuffer::buffer[i];
 }
 
-// 생성자 
-CommandBuffer::CommandBuffer() {
-    std::string baseDir = "buffer";
+void CommandBuffer::makeEmptyFiles(std::string& baseDir)
+{
+    for (int i = 1; i <= 5; ++i) {
+        std::string filePath = baseDir + "\\" + std::to_string(i) + "_empty.txt";
 
-    // buffer 폴더 생성
-    if (!directoryExists(baseDir)) {
-        if (!CreateDirectoryA(baseDir.c_str(), NULL)) {
-            std::cerr << "Failed to create base directory: " << baseDir << std::endl;
-            return;
-        }
-        else {
-            std::cout << "Created base directory: " << baseDir << std::endl;
+        if (!fileExists(filePath)) {
+            std::ofstream outFile(filePath);
+            if (outFile) {
+                outFile.close();
+            }
         }
     }
+}
 
+bool CommandBuffer::fillCommandBufferWithFileNames()
+{
     std::vector<std::string> bufferFileLists = getFileNamesInDirectory();
 
     bool fileChecker = false;
@@ -80,26 +80,28 @@ CommandBuffer::CommandBuffer() {
             fileChecker = true;
         }
     }
-    if (fileChecker) return;
+    return fileChecker;
+}
 
-    // 1_empty.txt ~ 5_empty.txt 파일 생성
-    for (int i = 1; i <= 5; ++i) {
-        std::string filePath = baseDir + "\\" + std::to_string(i) + "_empty.txt";
-
-        if (!fileExists(filePath)) {
-            std::ofstream outFile(filePath);
-            if (outFile) {
-                std::cout << "Created file: " << filePath << std::endl;
-                outFile.close();
-            }
-            else {
-                std::cerr << "Failed to create file: " << filePath << std::endl;
-            }
-        }
-        else {
-            std::cout << "File already exists: " << filePath << std::endl;
+bool CommandBuffer::createDirectory(std::string& baseDir)
+{
+    if (!directoryExists(baseDir)) {
+        if (!CreateDirectoryA(baseDir.c_str(), NULL)) {
+            return true;
         }
     }
+    return false;
+}
+
+CommandBuffer::CommandBuffer() {
+    std::string baseDir = "buffer";
+    
+    if (createDirectory(baseDir)) return;
+
+    if (fillCommandBufferWithFileNames()) return;
+
+    // make 1_empty.txt ~ 5_empty.txt files
+    makeEmptyFiles(baseDir);
 }
 
 bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
@@ -120,6 +122,7 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
             }
         }
     }
+    return true;
 }
 
 // Call from CommandChecker
@@ -164,7 +167,7 @@ void CommandBuffer::flush() {
             ssd.erase(cmd.firstData, cmd.secondData);
         }
         else {
-            std::cout << "Invalid Command" << std::endl;
+            std::exception();
         }
     }
 }
@@ -208,13 +211,16 @@ void CommandBuffer::fileWrite() {
         }
     }
 
-    for (int idx = this->buffer.size() + 1; idx <= 5; idx++) {
+    for (int idx = (int)this->buffer.size() + 1; idx <= 5; idx++) {
         filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
 
         if (!fileExists(filePath)) {
             std::ofstream outFile(filePath);
             if (outFile) {
                 outFile.close();
+            }
+            else {
+                std::exception();
             }
         }
     }
