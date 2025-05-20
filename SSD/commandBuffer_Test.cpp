@@ -25,7 +25,7 @@ TEST_F(CmdBufferFixture, FilesCreatedCorrectly) {
 }
 
 TEST_F(CmdBufferFixture, full) {
-    std::vector<command> write_commands = { {'W', 1, 1}, {'W', 2, 2}, {'W', 3, 3}, {'W', 4, 4}, {'W', 5, 5} };
+    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
 
     for (auto c : write_commands) {
         buffer.enqueue(c);
@@ -35,11 +35,22 @@ TEST_F(CmdBufferFixture, full) {
 }
 
 TEST_F(CmdBufferFixture, notFull) {
-    std::vector<command> write_commands = { {'W', 1, 1}, {'W', 2, 2}, {'W', 3, 3} };
+    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3} };
 
     for (auto c : write_commands) {
         buffer.enqueue(c);
     }
 
     EXPECT_FALSE(buffer.full());
+}
+
+TEST_F(CmdBufferFixture, readWithoutOutputFile) {
+    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
+
+    for (auto c : write_commands) {
+        buffer.enqueue(c);
+    }
+
+    command cmd{ CMD_READ, 4, 0 };
+    buffer.enqueue(cmd);
 }

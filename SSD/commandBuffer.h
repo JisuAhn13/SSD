@@ -6,6 +6,12 @@
 #include <vector>
 #include "SSD_func.h"
 
+enum {
+    CMD_WRITE = 'W',
+    CMD_READ = 'R',
+    CMD_ERASE = 'E',
+};
+
 struct command {       // 실행할 명령어를 나타내는 구조체
     char op;               // 연산자
     uint firstData;
@@ -24,8 +30,9 @@ public:
         return (buffer.size() >= CommandBuffer::MAX_BUFFER_SIZE);
     }
 
-    void enqueue(command command);
+    unsigned int enqueue(command cmd);
     void flush();
+    bool readinbuffer(unsigned int lba, unsigned int& value);
 
 private:
     // 디렉토리 존재 여부 확인

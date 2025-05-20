@@ -47,8 +47,28 @@ CommandBuffer::CommandBuffer() {
     }
 }
 
+bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
+{
+    for (auto iter = buffer.rbegin(); iter != buffer.rend(); ++iter) {
+        command cmd = *iter;
+        if (cmd.op == CMD_WRITE) {
+            if (cmd.firstData == lba) {
+                value = cmd.secondData;
+                return true;
+            }
+        }
+
+        if (cmd.op == CMD_ERASE) {
+            if (cmd.firstData >= lba && cmd.secondData <= lba) {
+                value = 0x0;
+                return true;
+            }
+        }
+    }
+}
+
 // Call from CommandChecker
-void CommandBuffer::enqueue(command command)
+unsigned int CommandBuffer::enqueue(command cmd)
 {
     // 0. Import buffer files (if not exist, create files)
 
@@ -58,17 +78,31 @@ void CommandBuffer::enqueue(command command)
     }
 
     // 1-2. Enqueue command to buffer
-    if (command.op == 'W' || command.op == 'E') {
-        buffer.push_back(command);
+    unsigned int value = 0;
+    if (cmd.op == 'W' || cmd.op == 'E') {
+        buffer.push_back(cmd);
     }
-    else if (command.op == 'R') {
-        // check if data can be decided without reading ssd_nand.txt
-        ssd.read(command.firstData);
+    else if (cmd.op == 'R') {
+        bool ret = readinbuffer(cmd.firstData, value);
+        if (ret == false) {
+            // if data can be decided without reading ssd_nand.txt, then ssd read
+            value = ssd.read(cmd.firstData);
+        }
+    }
+    else {
+        // Invalid Operator
     }
 
     // 2. Optimize
+    bool ret = readinbuffer(cmd.firstData, value);
+    if (ret == false) {
+        // if data can be decided without reading ssd_nand.txt, then ssd read
+        value = ssd.read(cmd.firstData);
+    }
 
     // 3. Export buffer files
+
+    return value;
 }
 
 void CommandBuffer::flush() {
