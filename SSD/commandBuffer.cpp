@@ -1,7 +1,7 @@
 #include "commandBuffer.h"
 #include "SSD_func.h"
 
-// µğ·ºÅä¸® Á¸Àç ¿©ºÎ È®ÀÎ
+// ë””ë ‰í† ë¦¬ ì¡´ì¬ ì—¬ë¶€ í™•ì¸
 bool CommandBuffer::directoryExists(const std::string& path) {
     DWORD ftyp = GetFileAttributesA(path.c_str());
     return (ftyp != INVALID_FILE_ATTRIBUTES && (ftyp & FILE_ATTRIBUTE_DIRECTORY));
@@ -12,11 +12,11 @@ bool CommandBuffer::fileExists(const std::string& path) {
     return (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-// »ı¼ºÀÚ 
+// ìƒì„±ì 
 CommandBuffer::CommandBuffer() {
     std::string baseDir = "buffer";
 
-    // buffer Æú´õ »ı¼º
+    // buffer í´ë” ìƒì„±
     if (!directoryExists(baseDir)) {
         if (!CreateDirectoryA(baseDir.c_str(), NULL)) {
             std::cerr << "Failed to create base directory: " << baseDir << std::endl;
@@ -27,7 +27,7 @@ CommandBuffer::CommandBuffer() {
         }
     }
 
-    // 1_empty.txt ~ 5_empty.txt ÆÄÀÏ »ı¼º
+    // 1_empty.txt ~ 5_empty.txt íŒŒì¼ ìƒì„±
     for (int i = 1; i <= 5; ++i) {
         std::string filePath = baseDir + "\\" + std::to_string(i) + "_empty.txt";
 
@@ -117,4 +117,105 @@ void CommandBuffer::flush() {
             std::cout << "Invalid Command" << std::endl;
         }
     }
+}
+
+void CommandBuffer::pushCMD(const command cmd) {
+    this->buffer.push_back(cmd);
+}
+
+void CommandBuffer::clearVec() {
+    this->buffer.clear();
+}
+
+void CommandBuffer::fileWrite() {
+    std::string baseDir = "buffer";
+    std::string filePath;
+
+    this->clearDir();
+
+    for (int idx = 1; idx <= this->buffer.size(); idx++) {
+        filePath = baseDir + "\\" + std::to_string(idx) +"_"+ this->buffer[idx - 1].op + "_"
+            + std::to_string(this->buffer[idx-1].firstData) + "_";
+        
+        if (this->buffer[idx-1].op == 'E') {
+            filePath += std::to_string(this->buffer[idx-1].secondData);
+        }
+        else {
+            std::ostringstream oss;
+            oss << std::uppercase
+                << std::hex
+                << this->buffer[idx-1].secondData;
+
+            filePath += oss.str();
+        }
+        filePath += ".txt";
+
+        if (!fileExists(filePath)) {
+            std::ofstream outFile(filePath);
+            if (outFile) {
+                outFile.close();
+            }
+        }
+    }
+
+    for (int idx = this->buffer.size() + 1; idx <= 5; idx++) {
+        filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
+
+        if (!fileExists(filePath)) {
+            std::ofstream outFile(filePath);
+            if (outFile) {
+                outFile.close();
+            }
+        }
+    }
+}
+
+void CommandBuffer::clearDir() {
+    std::string searchPath = "buffer\\*";
+
+    WIN32_FIND_DATAA findData;
+    HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
+
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return;
+    }
+
+    do {
+        std::string fileName = findData.cFileName;
+
+        if (fileName == "." || fileName == "..") continue;
+
+        std::string fullPath = "buffer\\" + fileName;
+
+        if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+            DeleteFileA(fullPath.c_str());
+        }
+
+    } while (FindNextFileA(hFind, &findData) != 0);
+
+    FindClose(hFind);
+}
+
+std::vector<std::string> CommandBuffer::getFileNamesInDirectory() {
+    std::vector<std::string> fileNames;
+    std::string directoryPath = "buffer";
+    std::string searchPath = directoryPath + "\\*";
+
+    WIN32_FIND_DATAA findData;
+    HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
+
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return fileNames;
+    }
+
+    do {
+        std::string name = findData.cFileName;
+
+        if (name != "." && name != "..") {
+            fileNames.push_back(name);
+        }
+    } while (FindNextFileA(hFind, &findData) != 0);
+
+    FindClose(hFind);
+    return fileNames;
 }

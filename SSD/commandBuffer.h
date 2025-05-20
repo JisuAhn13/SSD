@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <windows.h>  // CreateDirectoryA »ç¿ë
+#include <windows.h>  // CreateDirectoryA ì‚¬ìš©
 #include <string>
 #include <fstream>
 #include <vector>
@@ -12,8 +12,8 @@ enum {
     CMD_ERASE = 'E',
 };
 
-struct command {       // ½ÇÇàÇÒ ¸í·É¾î¸¦ ³ªÅ¸³»´Â ±¸Á¶Ã¼
-    char op;               // ¿¬»êÀÚ
+struct command {       // ì‹¤í–‰í•  ëª…ë ¹ì–´ë¥¼ ë‚˜íƒ€ë‚´ëŠ” êµ¬ì¡°ì²´
+    char op;               // ì—°ì‚°ì
     uint firstData;
     uint secondData;
 };
@@ -25,7 +25,6 @@ public:
     };
 
     CommandBuffer();
-
     inline bool full() const {
         return (buffer.size() >= CommandBuffer::MAX_BUFFER_SIZE);
     }
@@ -34,11 +33,16 @@ public:
     void flush();
     bool readinbuffer(unsigned int lba, unsigned int& value);
 
+    void pushCMD(const command cmd);
+    void clearVec();
+    void fileWrite();
+    void clearDir();
+    std::vector<std::string> getFileNamesInDirectory();
+
 private:
-    // µğ·ºÅä¸® Á¸Àç ¿©ºÎ È®ÀÎ
+    // ë””ë ‰í† ë¦¬ ì¡´ì¬ ì—¬ë¶€ í™•ì¸
     bool directoryExists(const std::string& path);
     bool fileExists(const std::string& path);
-
-    std::vector<command> buffer;  // ¿©·¯ ¸í·É¾î¸¦ ÀúÀåÇÏ´Â º¤ÅÍ
+    std::vector<command> buffer;  // ì—¬ëŸ¬ ëª…ë ¹ì–´ë¥¼ ì €ì¥í•˜ëŠ” ë²¡í„°
     SSD ssd;
 };
