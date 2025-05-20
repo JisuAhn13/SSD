@@ -46,3 +46,39 @@ CommandBuffer::CommandBuffer() {
         }
     }
 }
+
+void CommandBuffer::pushCMD(const command cmd) {
+    this->buffer.push_back(cmd);
+}
+
+void CommandBuffer::clearVec() {
+    this->buffer.clear();
+}
+
+void CommandBuffer::fileWrite() {
+
+}
+
+std::vector<std::string> CommandBuffer::getFileNamesInDirectory() {
+    std::vector<std::string> fileNames;
+    std::string directoryPath = "buffer";
+    std::string searchPath = directoryPath + "\\*";
+
+    WIN32_FIND_DATAA findData;
+    HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
+
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return fileNames;
+    }
+
+    do {
+        std::string name = findData.cFileName;
+
+        if (name != "." && name != "..") {
+            fileNames.push_back(name);
+        }
+    } while (FindNextFileA(hFind, &findData) != 0);
+
+    FindClose(hFind);
+    return fileNames;
+}
