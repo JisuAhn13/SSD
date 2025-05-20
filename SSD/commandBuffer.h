@@ -5,7 +5,7 @@
 #include <fstream>
 #include <vector>
 
-struct command {
+struct Command {
     char op;
     unsigned int firstData;
     unsigned int secondData;
@@ -14,13 +14,15 @@ struct command {
 class CommandBuffer {
 public:
     CommandBuffer();
-    std::vector<std::string> getFileNamesInDirectory();
+    Command getCommandFromFile(std::string fileName);
 
+    void removeTxt(std::string& token);
+    std::vector<std::string> getFileNamesInDirectory();
+    Command getBufferIndex(int i);
 private:
     // 디렉토리 존재 여부 확인
     bool directoryExists(const std::string& path);
     bool fileExists(const std::string& path);
-    std::vector<command> buffer;  // 여러 명령어를 저장하는 벡터
+    std::vector<Command> buffer;  // 여러 명령어를 저장하는 벡터
 };
 
-void removeTxt(std::string& token);

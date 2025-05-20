@@ -1,6 +1,13 @@
 #include "commandBuffer.h"
 #include "SSD_func.h"
 
+void CommandBuffer::removeTxt(std::string& token)
+{
+	size_t pos = token.find(".txt");
+	if (pos != std::string::npos) {
+		token = token.substr(0, pos);
+	}
+}
 // 디렉토리 존재 여부 확인
 bool CommandBuffer::directoryExists(const std::string& path) {
 	DWORD ftyp = GetFileAttributesA(path.c_str());
@@ -40,11 +47,13 @@ bool bufferFileExists(const std::string& fileName) {
 	std::regex pattern(R"([1-5]_.*\.txt)");
 	return std::regex_match(fileName, pattern);
 }
-
-command getCommandFromFile(std::string fileName) {
+Command CommandBuffer::getBufferIndex(int i) {
+	return CommandBuffer::buffer[i];
+}
+Command CommandBuffer::getCommandFromFile(std::string fileName) {
 	std::stringstream ss(fileName);
 	std::string token;
-	command ret = { 0, };
+	Command ret = { 0, };
 
 	// '_'을 구분자로 문자열을 분리하여 벡터에 저장
 	while (std::getline(ss, token, '_')) {
@@ -58,7 +67,7 @@ command getCommandFromFile(std::string fileName) {
 			ret.op = token[0];
 		}
 		else if (ret.firstData ==0 && token.length() == 2) {
-			ret.firstData = stoul(token);
+			ret.firstData = std::stoul(token);
 		}
 		else if( token.length() >= 2) {
 			removeTxt(token);
@@ -67,13 +76,7 @@ command getCommandFromFile(std::string fileName) {
 	}
 	return ret;
 }
-void removeTxt(std::string& token)
-{
-	size_t pos = token.find(".txt");
-	if (pos != std::string::npos) {
-		token = token.substr(0, pos);
-	}
-}
+
 // 생성자 
 CommandBuffer::CommandBuffer() {
 	std::string baseDir = "buffer";
@@ -94,7 +97,7 @@ CommandBuffer::CommandBuffer() {
 	bool fileChecker = false;
 	for (const auto& fileName : bufferFileLists) {
 		if (bufferFileExists(fileName)) {
-			command cmd = getCommandFromFile(fileName);
+			Command cmd = getCommandFromFile(fileName);
 			buffer.push_back(cmd);
 			fileChecker = true;
 		}
