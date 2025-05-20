@@ -56,7 +56,72 @@ void CommandBuffer::clearVec() {
 }
 
 void CommandBuffer::fileWrite() {
+    std::string baseDir = "buffer";
+    std::string filePath;
 
+    this->clearDir();
+
+    for (int idx = 1; idx <= this->buffer.size(); idx++) {
+        filePath = baseDir + "\\" + std::to_string(idx) +"_"+ this->buffer[idx - 1].op + "_"
+            + std::to_string(this->buffer[idx-1].firstData) + "_";
+        
+        if (this->buffer[idx-1].op == 'E') {
+            filePath += std::to_string(this->buffer[idx-1].secondData);
+        }
+        else {
+            std::ostringstream oss;
+            oss << std::uppercase
+                << std::hex
+                << this->buffer[idx-1].secondData;
+
+            filePath += oss.str();
+        }
+        filePath += ".txt";
+
+        if (!fileExists(filePath)) {
+            std::ofstream outFile(filePath);
+            if (outFile) {
+                outFile.close();
+            }
+        }
+    }
+
+    for (int idx = this->buffer.size() + 1; idx <= 5; idx++) {
+        filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
+
+        if (!fileExists(filePath)) {
+            std::ofstream outFile(filePath);
+            if (outFile) {
+                outFile.close();
+            }
+        }
+    }
+}
+
+void CommandBuffer::clearDir() {
+    std::string searchPath = "buffer\\*";
+
+    WIN32_FIND_DATAA findData;
+    HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
+
+    if (hFind == INVALID_HANDLE_VALUE) {
+        return;
+    }
+
+    do {
+        std::string fileName = findData.cFileName;
+
+        if (fileName == "." || fileName == "..") continue;
+
+        std::string fullPath = "buffer\\" + fileName;
+
+        if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+            DeleteFileA(fullPath.c_str());
+        }
+
+    } while (FindNextFileA(hFind, &findData) != 0);
+
+    FindClose(hFind);
 }
 
 std::vector<std::string> CommandBuffer::getFileNamesInDirectory() {

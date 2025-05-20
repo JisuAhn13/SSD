@@ -58,6 +58,9 @@ TEST_F(CmdBufferFixture, FilesCreatedCorrectly) {
 TEST_F(CmdBufferFixture, FileWriteSuccess) {
     std::vector<std::string> filename = WriteandReturn();
 
+    std::cout << filename[0] << std::endl;
+    std::cout << filename[1] << std::endl;
+
     EXPECT_EQ(filename[0], "1_E_1_3.txt");
     EXPECT_EQ(filename[1], "2_E_3_5.txt");
     EXPECT_EQ(filename[2], "3_W_2_12345678.txt");

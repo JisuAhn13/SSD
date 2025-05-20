@@ -18,6 +18,7 @@ public:
     void pushCMD(const command cmd);
     void clearVec();
     void fileWrite();
+    void clearDir();
     std::vector<std::string> getFileNamesInDirectory();
 private:
     // 디렉토리 존재 여부 확인
