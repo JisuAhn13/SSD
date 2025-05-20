@@ -25,7 +25,7 @@ public:
     };
 
     CommandBuffer();
-    inline bool full() const {
+    inline bool isFull() const {
         return (buffer.size() >= CommandBuffer::MAX_BUFFER_SIZE);
     }
 

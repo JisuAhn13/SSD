@@ -62,7 +62,7 @@ TEST_F(CmdBufferFixture, full) {
         cmdBuffer.enqueue(c);
     }
 
-    EXPECT_TRUE(cmdBuffer.full());
+    EXPECT_TRUE(cmdBuffer.isFull());
 }
 
 TEST_F(CmdBufferFixture, notFull) {
@@ -72,7 +72,7 @@ TEST_F(CmdBufferFixture, notFull) {
         cmdBuffer.enqueue(c);
     }
 
-    EXPECT_FALSE(cmdBuffer.full());
+    EXPECT_FALSE(cmdBuffer.isFull());
 }
 
 TEST_F(CmdBufferFixture, readWithoutOutputFile) {
