@@ -43,7 +43,7 @@ protected:
 
         return filename;
     }
-private:
+
     CommandBuffer cmdBuffer;
 };
 
@@ -53,6 +53,37 @@ TEST_F(CmdBufferFixture, FilesCreatedCorrectly) {
         std::string filePath = baseDir + "\\" + std::to_string(i) + "_empty.txt";
         ASSERT_TRUE(fileExists(filePath)) << "File " << filePath << " does not exist.";
     }
+}
+
+TEST_F(CmdBufferFixture, full) {
+    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
+
+    for (auto c : write_commands) {
+        cmdBuffer.enqueue(c);
+    }
+
+    EXPECT_TRUE(cmdBuffer.isFull());
+}
+
+TEST_F(CmdBufferFixture, notFull) {
+    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3} };
+
+    for (auto c : write_commands) {
+        cmdBuffer.enqueue(c);
+    }
+
+    EXPECT_FALSE(cmdBuffer.isFull());
+}
+
+TEST_F(CmdBufferFixture, readWithoutOutputFile) {
+    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
+
+    for (auto c : write_commands) {
+        cmdBuffer.enqueue(c);
+    }
+
+    command cmd{ CMD_READ, 4, 0 };
+    cmdBuffer.enqueue(cmd);
 }
 
 TEST_F(CmdBufferFixture, FileWriteSuccess) {
