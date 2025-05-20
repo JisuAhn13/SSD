@@ -98,6 +98,7 @@ bool CommandChecker::executeErase(std::string lba, std::string size)
 	}
 
 	EraseCommand cmd { (unsigned int)start_lba, (unsigned int)size_lba };
+	cmd.execute();
 
 	return true;
 }
@@ -128,9 +129,12 @@ bool CommandChecker::isValidAddress(std::string addr)
 
 void ReadCommand::execute()
 {
-	CommandBuffer buffer;
-	command cmd{ 'R', __lba, 0 };
+	//CommandBuffer buffer;
+	//command cmd{ 'R', __lba, 0 };
 	//buffer.enqueue(cmd);
+
+	SSD ssd;
+	ssd.read(__lba);
 }
 
 void WriteCommand::execute()
@@ -138,6 +142,9 @@ void WriteCommand::execute()
 	CommandBuffer buffer;
 	command cmd{ 'W', __lba, __addr };
 	//buffer.enqueue(cmd);
+
+	SSD ssd;
+	ssd.write(__lba, __addr);
 }
 
 void EraseCommand::execute()
@@ -145,4 +152,7 @@ void EraseCommand::execute()
 	CommandBuffer buffer;
 	command cmd{ 'E', __lba, __lba + __size - 1 };
 	//buffer.enqueue(cmd);
+
+	SSD ssd;
+	ssd.erase(__lba, __lba + __size - 1);
 }
