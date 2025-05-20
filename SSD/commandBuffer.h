@@ -40,7 +40,12 @@ public:
     void eraseAlgorithm();
     void mergeAlgorithm();
     void optimizeCMD();
+    void removeTxt(std::string& token);
+
+    command getCommandFromFile(std::string fileName);
     std::vector<std::string> getFileNamesInDirectory();
+
+    command getBufferIndex(int i);
 
 private:
     // 디렉토리 존재 여부 확인

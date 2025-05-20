@@ -12,6 +12,49 @@ bool CommandBuffer::fileExists(const std::string& path) {
     return (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
+
+void CommandBuffer::removeTxt(std::string& token)
+{
+    size_t pos = token.find(".txt");
+    if (pos != std::string::npos) {
+        token = token.substr(0, pos);
+    }
+}
+
+command  CommandBuffer::getCommandFromFile(std::string fileName) {
+    std::stringstream ss(fileName);
+    std::string token;
+    command ret = { 0, };
+    while (std::getline(ss, token, '_')) {
+
+        if (token == "empty.txt") {
+            removeTxt(token);
+            return ret;
+        }
+
+        if (token == "W" || token == "E") {
+            ret.op = token[0];
+        }
+        else if (ret.firstData == 0 && token.length() == 2) {
+            ret.firstData = stoul(token);
+        }
+        else if (token.length() >= 2) {
+            removeTxt(token);
+            ret.secondData = std::stoul(token, nullptr, 16);  // 16���� ó��
+        }
+    }
+    return ret;
+}
+
+bool bufferFileExists(const std::string& fileName) {
+    std::regex pattern(R"([1-5]_.*\.txt)");
+    return std::regex_match(fileName, pattern);
+}
+
+command CommandBuffer::getBufferIndex(int i) {
+    return CommandBuffer::buffer[i];
+}
+
 // 생성자 
 CommandBuffer::CommandBuffer() {
     std::string baseDir = "buffer";
@@ -26,6 +69,18 @@ CommandBuffer::CommandBuffer() {
             std::cout << "Created base directory: " << baseDir << std::endl;
         }
     }
+
+    std::vector<std::string> bufferFileLists = getFileNamesInDirectory();
+
+    bool fileChecker = false;
+    for (const auto& fileName : bufferFileLists) {
+        if (bufferFileExists(fileName)) {
+            command cmd = getCommandFromFile(fileName);
+            buffer.push_back(cmd);
+            fileChecker = true;
+        }
+    }
+    if (fileChecker) return;
 
     // 1_empty.txt ~ 5_empty.txt 파일 생성
     for (int i = 1; i <= 5; ++i) {

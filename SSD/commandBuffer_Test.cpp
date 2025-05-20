@@ -7,12 +7,14 @@ using namespace testing;
 class CmdBufferFixture : public ::testing::Test {
 protected:
     void SetUp() override {
+        cmdBuffer.clearVec();
+        cmdBuffer.clearDir();
     }
 
     // 파일이 존재하는지 확인하는 함수
     bool fileExists(const std::string& path) {
         DWORD fileAttr = GetFileAttributesA(path.c_str());
-        return (fileAttr != INVALID_FILE_ATTRIBUTES && !(fileAttr & FILE_ATTRIBUTE_DIRECTORY));
+        return fileAttr != INVALID_FILE_ATTRIBUTES;
     }
 
     void feelCmdBuffer() {
@@ -47,12 +49,48 @@ protected:
     CommandBuffer cmdBuffer;
 };
 
-TEST_F(CmdBufferFixture, FilesCreatedCorrectly) {
-    std::string baseDir = "buffer";
-    for (int i = 1; i <= 5; ++i) {
-        std::string filePath = baseDir + "\\" + std::to_string(i) + "_empty.txt";
-        ASSERT_TRUE(fileExists(filePath)) << "File " << filePath << " does not exist.";
+void createTestFile(const std::string& fileName, const std::string& content = "") {
+    std::string directoryPath = "buffer";
+    std::string filePath = directoryPath + "\\" + fileName;
+    if (GetFileAttributesA(directoryPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
+        if (!CreateDirectoryA(directoryPath.c_str(), NULL)) {
+            std::cerr << "Failed to create directory: " << directoryPath << std::endl;
+            return;
+        }
     }
+    std::ofstream outFile(filePath);
+    if (outFile.is_open()) {
+        outFile << content;
+        outFile.close();
+        std::cout << "Created file: " << filePath << std::endl;
+    }
+    else {
+        std::cerr << "Failed to create file: " << filePath << std::endl;
+    }
+}
+
+TEST_F(CmdBufferFixture, FilesCreatedCorrectly) {
+    std::vector<std::string> bufferFileLists = cmdBuffer.getFileNamesInDirectory();
+
+    for (const auto& fileName : bufferFileLists) {
+        ASSERT_TRUE(!fileName.empty());
+    }
+}
+
+TEST_F(CmdBufferFixture, BufferInitialReadOperation) {
+
+    createTestFile("1_W_99_ABCDEF12.txt");
+    createTestFile("2_E_11_13.txt");
+    createTestFile("3_W_12_12345678.txt");
+    createTestFile("4_E_12_1.txt");
+    createTestFile("5_W_19_ACACCABA.txt");
+
+    //creator test purpose 
+    CommandBuffer cmdBuf;
+    command ret = cmdBuf.getBufferIndex(0);
+    EXPECT_EQ('W', ret.op);
+    EXPECT_EQ(99, ret.firstData);
+    EXPECT_EQ(0xABCDEF12, ret.secondData);
 }
 
 TEST_F(CmdBufferFixture, full) {
