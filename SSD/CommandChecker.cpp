@@ -77,7 +77,7 @@ bool CommandChecker::executeErase(std::string lba, std::string size)
 {
 	int start_lba = std::stoi(lba);
 	int size_lba = std::stoi(size);
-	int end_lba = start_lba + size_lba;
+	int end_lba = start_lba + size_lba - 1;
 
 	if (start_lba < 0 || size_lba < 0) {
 		writeOutputFile();
