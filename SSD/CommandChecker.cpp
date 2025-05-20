@@ -71,11 +71,15 @@ bool CommandChecker::executeErase(std::string lba, std::string size)
 		return false;
 	}
 
+	if (size_lba == 0) {
+		return false;
+	}
+
 	if (size_lba > 10) {
 		end_lba = start_lba + 9;
 	}
 
-	//ssd.erase(start_lba, end_lba);'
+	ssd.erase(start_lba, end_lba);
 
 	return true;
 }
