@@ -140,7 +140,7 @@ void ReadCommand::execute()
 void WriteCommand::execute()
 {
 	CommandBuffer buffer;
-	command cmd{ 'W', __lba, __addr };
+	BufferCommand cmd{ 'W', __lba, __addr };
 	//buffer.enqueue(cmd);
 
 	SSD ssd;
@@ -150,7 +150,7 @@ void WriteCommand::execute()
 void EraseCommand::execute()
 {
 	CommandBuffer buffer;
-	command cmd{ 'E', __lba, __lba + __size - 1 };
+	BufferCommand cmd{ 'E', __lba, __lba + __size - 1 };
 	//buffer.enqueue(cmd);
 
 	SSD ssd;

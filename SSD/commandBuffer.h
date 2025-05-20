@@ -12,7 +12,7 @@ enum {
     CMD_ERASE = 'E',
 };
 
-struct command {
+struct BufferCommand {
     char op;
     uint firstData;
     uint secondData;
@@ -35,11 +35,11 @@ public:
         return (buffer.size() >= CommandBuffer::MAX_BUFFER_SIZE);
     }
 
-    unsigned int enqueue(command cmd);
+    unsigned int enqueue(BufferCommand cmd);
     void flush();
     bool readinbuffer(unsigned int lba, unsigned int& value);
 
-    void pushCMD(const command cmd);
+    void pushCMD(const BufferCommand cmd);
     void clearVec();
     void fileWrite();
     void clearDir();
@@ -48,14 +48,14 @@ public:
     void optimizeCMD();
     void removeTxt(std::string& token);
 
-    command getCommandFromFile(std::string fileName);
+    BufferCommand getCommandFromFile(std::string fileName);
     std::vector<std::string> getFileNamesInDirectory();
 
-    command getBufferIndex(int i);
+    BufferCommand getBufferIndex(int i);
 
 private:
     bool directoryExists(const std::string& path);
     bool fileExists(const std::string& path);
-    std::vector<command> buffer;
+    std::vector<BufferCommand> buffer;
     SSD ssd;
 };

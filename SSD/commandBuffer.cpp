@@ -20,10 +20,10 @@ void CommandBuffer::removeTxt(std::string& token)
     }
 }
 
-command  CommandBuffer::getCommandFromFile(std::string fileName) {
+BufferCommand  CommandBuffer::getCommandFromFile(std::string fileName) {
     std::stringstream ss(fileName);
     std::string token;
-    command ret = { 0, };
+    BufferCommand ret = { 0, };
     while (std::getline(ss, token, '_')) {
 
         if (token == "empty.txt") {
@@ -35,7 +35,7 @@ command  CommandBuffer::getCommandFromFile(std::string fileName) {
             ret.op = token[0];
         }
         else if (ret.firstData == 0 && token.length() == 2) {
-            ret.firstData = stoul(token);
+            ret.firstData = std::stoul(token);
         }
         else if (token.length() >= 2) {
             removeTxt(token);
@@ -50,7 +50,7 @@ bool bufferFileExists(const std::string& fileName) {
     return std::regex_match(fileName, pattern);
 }
 
-command CommandBuffer::getBufferIndex(int i) {
+BufferCommand CommandBuffer::getBufferIndex(int i) {
     return CommandBuffer::buffer[i];
 }
 
@@ -75,7 +75,7 @@ bool CommandBuffer::fillCommandBufferWithFileNames()
     bool fileChecker = false;
     for (const auto& fileName : bufferFileLists) {
         if (bufferFileExists(fileName)) {
-            command cmd = getCommandFromFile(fileName);
+            BufferCommand cmd = getCommandFromFile(fileName);
             buffer.push_back(cmd);
             fileChecker = true;
         }
@@ -107,7 +107,7 @@ CommandBuffer::CommandBuffer() {
 bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 {
     for (auto iter = buffer.rbegin(); iter != buffer.rend(); ++iter) {
-        command cmd = *iter;
+        BufferCommand cmd = *iter;
         if (cmd.op == CMD_WRITE) {
             if (cmd.firstData == lba) {
                 value = cmd.secondData;
@@ -126,7 +126,7 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 }
 
 // Call from CommandChecker
-unsigned int CommandBuffer::enqueue(command cmd)
+unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 {
     // 0. Import buffer files (if not exist, create files)
 
@@ -172,7 +172,7 @@ void CommandBuffer::flush() {
     }
 }
 
-void CommandBuffer::pushCMD(const command cmd) {
+void CommandBuffer::pushCMD(const BufferCommand cmd) {
     this->buffer.push_back(cmd);
 }
 

@@ -18,11 +18,11 @@ protected:
     }
 
     void feelCmdBuffer() {
-        command CMD1 = { 'E', 1, 3 };
-        command CMD2 = { 'E', 3, 5 };
-        command CMD3 = { 'W', 2, 0x12345678 };
-        command CMD4 = { 'W', 4, 0x23456789 };
-        command CMD5 = { 'E', 5, 7 };
+        BufferCommand CMD1 = { 'E', 1, 3 };
+        BufferCommand CMD2 = { 'E', 3, 5 };
+        BufferCommand CMD3 = { 'W', 2, 0x12345678 };
+        BufferCommand CMD4 = { 'W', 4, 0x23456789 };
+        BufferCommand CMD5 = { 'E', 5, 7 };
 
         cmdBuffer.clearVec();
         cmdBuffer.pushCMD(CMD1);
@@ -82,14 +82,14 @@ TEST_F(CmdBufferFixture, BufferInitialReadOperation) {
 
     //creator test purpose 
     CommandBuffer cmdBuf;
-    command ret = cmdBuf.getBufferIndex(0);
+    BufferCommand ret = cmdBuf.getBufferIndex(0);
     EXPECT_EQ('W', ret.op);
     EXPECT_EQ(99, ret.firstData);
     EXPECT_EQ(0xABCDEF12, ret.secondData);
 }
 
 TEST_F(CmdBufferFixture, full) {
-    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
+    std::vector<BufferCommand> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
 
     for (auto c : write_commands) {
         cmdBuffer.enqueue(c);
@@ -99,7 +99,7 @@ TEST_F(CmdBufferFixture, full) {
 }
 
 TEST_F(CmdBufferFixture, notFull) {
-    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3} };
+    std::vector<BufferCommand> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3} };
 
     for (auto c : write_commands) {
         cmdBuffer.enqueue(c);
@@ -109,13 +109,13 @@ TEST_F(CmdBufferFixture, notFull) {
 }
 
 TEST_F(CmdBufferFixture, readWithoutOutputFile) {
-    std::vector<command> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
+    std::vector<BufferCommand> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
 
     for (auto c : write_commands) {
         cmdBuffer.enqueue(c);
     }
 
-    command cmd{ CMD_READ, 4, 0 };
+    BufferCommand cmd{ CMD_READ, 4, 0 };
     cmdBuffer.enqueue(cmd);
 }
 

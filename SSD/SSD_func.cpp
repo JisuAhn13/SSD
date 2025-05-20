@@ -34,7 +34,7 @@ uint SSD::readDataFromLBA(std::ifstream& inFile, const uint& LBA)
         if (iss >> readLBA >> data && readLBA == LBA) {
             removeHexPrefix(data);
             if (data.empty())return 0;
-            return std::stoll(data, nullptr, 16);
+            return std::stoul(data, nullptr, 16);
         }
     }
     std::cerr << "search Fail" << std::endl;
@@ -121,7 +121,7 @@ void SSD::write(unsigned int LBA, unsigned int Val) {
 }
 
 void SSD::erase(uint StartLBA, uint EndLBA) {
-    for (int LBA = StartLBA; LBA <= EndLBA; LBA++) {
+    for (uint LBA = StartLBA; LBA <= EndLBA; LBA++) {
         this->write(LBA, 0x00000000);
     }
 }
