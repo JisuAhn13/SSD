@@ -119,3 +119,7 @@ void SSD::write(unsigned int LBA, unsigned int Val) {
     }
     outfile.close();
 }
+
+void SSD::erase(uint StartLBA, uint EndLBA) {
+    return;
+}

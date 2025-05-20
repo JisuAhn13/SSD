@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="CommandChecker.cpp" />
     <ClCompile Include="CommandChecker_test.cpp" />
+    <ClCompile Include="eraseChecker_test.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SSD_func.cpp">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"> %(AdditionalOptions)</AdditionalOptions>
