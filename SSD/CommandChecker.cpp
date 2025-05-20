@@ -46,6 +46,10 @@ bool CommandChecker::execute(int argc, char* argv[])
 		return executeErase(lba, size);
 	}
 
+	if (op == op_flush) {
+		return executeFlush();
+	}
+
 	return false;
 }
 
@@ -103,6 +107,14 @@ bool CommandChecker::executeErase(std::string lba, std::string size)
 	return true;
 }
 
+bool CommandChecker::executeFlush()
+{
+	FlushCommand cmd;
+	cmd.execute();
+
+	return true;
+}
+
 bool CommandChecker::isValidRange(unsigned int LBA)
 {
 	if (LBA >= 0 && LBA < 100) {
@@ -114,7 +126,7 @@ bool CommandChecker::isValidRange(unsigned int LBA)
 
 bool CommandChecker::isValidOperator(std::string op)
 {
-	if (op == "W" || op == "R" || op == "E") {
+	if (op == "W" || op == "R" || op == "E" || op == "F") {
 		return true;
 	}
 
@@ -129,30 +141,28 @@ bool CommandChecker::isValidAddress(std::string addr)
 
 void ReadCommand::execute()
 {
-	//CommandBuffer buffer;
-	//command cmd{ 'R', __lba, 0 };
-	//buffer.enqueue(cmd);
-
-	SSD ssd;
-	ssd.read(__lba);
+	CommandBuffer buffer;
+	command cmd{ 'R', __lba, 0 };
+	buffer.enqueue(cmd);
 }
 
 void WriteCommand::execute()
 {
 	CommandBuffer buffer;
 	command cmd{ 'W', __lba, __addr };
-	//buffer.enqueue(cmd);
-
-	SSD ssd;
-	ssd.write(__lba, __addr);
+	buffer.enqueue(cmd);
 }
 
 void EraseCommand::execute()
 {
 	CommandBuffer buffer;
 	command cmd{ 'E', __lba, __lba + __size - 1 };
-	//buffer.enqueue(cmd);
+	buffer.enqueue(cmd);
+}
 
-	SSD ssd;
-	ssd.erase(__lba, __lba + __size - 1);
+void FlushCommand::execute()
+{
+	CommandBuffer buffer;
+	command cmd{ 'F', __lba, 0 };
+	buffer.enqueue(cmd);
 }

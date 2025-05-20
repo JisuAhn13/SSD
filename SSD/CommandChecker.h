@@ -9,6 +9,7 @@ public:
 		READ,
 		WRITE,
 		ERASE,
+		FLUSH,
 	};
 
 	explicit Command(Type_e Type, unsigned int lba) : __Type(Type), __lba(lba)
@@ -67,6 +68,15 @@ private:
 	unsigned int __size;
 };
 
+class FlushCommand : public Command {
+public:
+	explicit FlushCommand() : Command(Command::FLUSH, 0)
+	{
+	}
+
+	void execute() override;
+};
+
 class CommandChecker {
 public:
 	bool execute(int argc, char* argv[]);
@@ -79,10 +89,12 @@ private:
 	bool executeRead(std::string lba);
 	bool executeWrite(std::string lba, std::string addr);
 	bool executeErase(std::string lba, std::string size);
+	bool executeFlush();
 
 	const std::string output_filename = "ssd_output.txt";
 
 	const std::string op_read = "R";
 	const std::string op_write = "W";
 	const std::string op_erase = "E";
+	const std::string op_flush = "F";
 };
