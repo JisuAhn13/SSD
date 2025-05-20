@@ -140,12 +140,12 @@
     <ClCompile Include="writeChecker_test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="commandBuffer.h" />
     <ClInclude Include="CommandChecker.h" />
     <ClInclude Include="SSD_func.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
