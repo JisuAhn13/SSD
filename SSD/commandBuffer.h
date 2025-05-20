@@ -4,7 +4,6 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include <unordered_set>
 #include "SSD_func.h"
 
 enum {
@@ -24,7 +23,6 @@ public:
     enum {
         MAX_BUFFER_SIZE = 5,
     };
-    CommandBuffer();
 
     void makeEmptyFiles(std::string& baseDir);
 
@@ -32,6 +30,7 @@ public:
 
     bool createDirectory(std::string& baseDir);
 
+    CommandBuffer();
     inline bool isFull() const {
         return (buffer.size() >= CommandBuffer::MAX_BUFFER_SIZE);
     }
@@ -47,7 +46,7 @@ public:
     void eraseAlgorithm();
     void mergeAlgorithm();
     void optimizeCMD();
-    std::string removeTxt(std::string& token);
+    void removeTxt(std::string& token);
 
     BufferCommand getCommandFromFile(std::string fileName);
     std::vector<std::string> getFileNamesInDirectory();

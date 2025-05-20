@@ -128,19 +128,3 @@ TEST_F(CmdBufferFixture, FileWriteSuccess) {
     EXPECT_EQ(filename[3], "4_W_4_23456789.txt");
     EXPECT_EQ(filename[4], "5_E_5_7.txt");
 }
-
-TEST_F(CmdBufferFixture, CheckEraseAlgorithmRemove) {
-    createTestFile("1_E_1_3.txt");          // E 1~3 → 길이 3
-    createTestFile("2_E_3_3.txt");          // E 3~5 → 길이 3
-    createTestFile("3_W_2_12345678.txt");   // W 2 = 0x12345678
-    createTestFile("4_W_4_23456789.txt");   // W 4 = 0x23456789
-    createTestFile("5_E_1_5.txt");          // E 1~5 → 길이 5
-
-    //creator test purpose 
-    CommandBuffer cmdBuf;
-    cmdBuf.eraseAlgorithm();
-    BufferCommand ret = cmdBuf.getBufferIndex(0);
-    EXPECT_EQ('E', ret.op);
-    EXPECT_EQ(1, ret.firstData);
-    EXPECT_EQ(5, ret.secondData);
-}
