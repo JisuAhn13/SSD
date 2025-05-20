@@ -124,6 +124,20 @@ void CommandBuffer::clearDir() {
     FindClose(hFind);
 }
 
+void CommandBuffer::eraseAlgorithm() {
+
+}
+
+void CommandBuffer::mergeAlgorithm() {
+
+}
+
+void CommandBuffer::optimizeCMD() {
+    this->eraseAlgorithm();
+    this->mergeAlgorithm();
+}
+
+
 std::vector<std::string> CommandBuffer::getFileNamesInDirectory() {
     std::vector<std::string> fileNames;
     std::string directoryPath = "buffer";
