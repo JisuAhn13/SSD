@@ -151,27 +151,27 @@ bool CommandChecker::isValidAddress(std::string addr)
 void ReadCommand::execute()
 {
 	CommandBuffer buffer;
-	command cmd{ 'R', __lba, 0 };
+	BufferCommand cmd{ 'R', __lba, 0 };
 	buffer.enqueue(cmd);
 }
 
 void WriteCommand::execute()
 {
 	CommandBuffer buffer;
-	command cmd{ 'W', __lba, __addr };
+	BufferCommand cmd{ 'W', __lba, __addr };
 	buffer.enqueue(cmd);
 }
 
 void EraseCommand::execute()
 {
 	CommandBuffer buffer;
-	command cmd{ 'E', __lba, __lba + __size - 1 };
+	BufferCommand cmd{ 'E', __lba, __lba + __size - 1 };
 	buffer.enqueue(cmd);
 }
 
 void FlushCommand::execute()
 {
 	CommandBuffer buffer;
-	command cmd{ 'F', __lba, 0 };
+	BufferCommand cmd{ 'F', __lba, 0 };
 	buffer.enqueue(cmd);
 }

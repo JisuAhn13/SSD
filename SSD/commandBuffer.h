@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <windows.h>  // CreateDirectoryA 사용
+#include <windows.h>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -12,8 +12,8 @@ enum {
     CMD_ERASE = 'E',
 };
 
-struct command {       // 실행할 명령어를 나타내는 구조체
-    char op;               // 연산자
+struct BufferCommand {
+    char op;
     uint firstData;
     uint secondData;
 };
@@ -24,28 +24,38 @@ public:
         MAX_BUFFER_SIZE = 5,
     };
 
+    void makeEmptyFiles(std::string& baseDir);
+
+    bool fillCommandBufferWithFileNames(void);
+
+    bool createDirectory(std::string& baseDir);
+
     CommandBuffer();
     inline bool isFull() const {
         return (buffer.size() >= CommandBuffer::MAX_BUFFER_SIZE);
     }
 
-    unsigned int enqueue(command cmd);
+    unsigned int enqueue(BufferCommand cmd);
     void flush();
     bool readinbuffer(unsigned int lba, unsigned int& value);
 
-    void pushCMD(const command cmd);
+    void pushCMD(const BufferCommand cmd);
     void clearVec();
     void fileWrite();
     void clearDir();
     void eraseAlgorithm();
     void mergeAlgorithm();
     void optimizeCMD();
+    void removeTxt(std::string& token);
+
+    BufferCommand getCommandFromFile(std::string fileName);
     std::vector<std::string> getFileNamesInDirectory();
 
+    BufferCommand getBufferIndex(int i);
+
 private:
-    // 디렉토리 존재 여부 확인
     bool directoryExists(const std::string& path);
     bool fileExists(const std::string& path);
-    std::vector<command> buffer;  // 여러 명령어를 저장하는 벡터
+    std::vector<BufferCommand> buffer;
     SSD ssd;
 };
