@@ -8,7 +8,8 @@ public:
 
 	}
 
-	std::string op_invalid = "E";
+	std::string op_invalid = "A";
+	std::string op_erase = "E";
 	std::string op_read = "R";
 	std::string op_write = "W";
 
