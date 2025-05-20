@@ -46,3 +46,41 @@ CommandBuffer::CommandBuffer() {
         }
     }
 }
+
+// Call from CommandChecker
+void CommandBuffer::enqueue(command command)
+{
+    // 0. Import buffer files (if not exist, create files)
+
+    // 1-1. If buffer is full(size:5), execute all commands
+    if (full()) {
+        flush();
+    }
+
+    // 1-2. Enqueue command to buffer
+    if (command.op == 'W' || command.op == 'E') {
+        buffer.push_back(command);
+    }
+    else if (command.op == 'R') {
+        // check if data can be decided without reading ssd_nand.txt
+        ssd.read(command.firstData);
+    }
+
+    // 2. Optimize
+
+    // 3. Export buffer files
+}
+
+void CommandBuffer::flush() {
+    for (auto c : buffer) {
+        if (c.op == 'W') {
+            ssd.write(c.firstData, c.secondData);
+        }
+        else if (c.op == 'E') {
+            ssd.erase(c.firstData, c.secondData);
+        }
+        else {
+            std::cout << "Invalid Command" << std::endl;
+        }
+    }
+}
