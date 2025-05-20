@@ -21,27 +21,29 @@ bool CommandChecker::execute(int argc, char* argv[])
 	}
 
 	std::string op = std::string(argv[1]);
-	std::string lba = std::string(argv[2]);
 
 	if (isValidOperator(op) == false) {
 		return false;
 	}
 
-	if (isValidRange(std::stoi(lba)) == false) {
+	if (isValidRange(argv) == false) {
 		writeOutputFile();
 		return false;
 	}
 
 	if (op == op_write) {
+		std::string lba = std::string(argv[2]);
 		std::string addr = std::string(argv[3]);
 		return executeWrite(lba, addr);
 	}
 
 	if (op == op_read) {
+		std::string lba = std::string(argv[2]);
 		return executeRead(lba);
 	}
 
 	if (op == op_erase) {
+		std::string lba = std::string(argv[2]);
 		std::string size = std::string(argv[3]);
 		return executeErase(lba, size);
 	}
@@ -115,13 +117,20 @@ bool CommandChecker::executeFlush()
 	return true;
 }
 
-bool CommandChecker::isValidRange(unsigned int LBA)
+bool CommandChecker::isValidRange(char* argv[])
 {
-	if (LBA >= 0 && LBA < 100) {
+	std::string op = std::string(argv[1]);
+	if (op == op_flush) {
 		return true;
 	}
 
-	return false;
+	std::string lba = std::string(argv[2]);
+	int lba_value = stoi(lba);
+	if (lba_value < 0 || lba_value > 99) {
+		return false;
+	}
+
+	return true;
 }
 
 bool CommandChecker::isValidOperator(std::string op)

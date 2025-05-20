@@ -81,7 +81,7 @@ class CommandChecker {
 public:
 	bool execute(int argc, char* argv[]);
 
-	bool isValidRange(unsigned int LBA);
+	bool isValidRange(char* argv[]);
 	bool isValidOperator(std::string op);
 	bool isValidAddress(std::string addr);
 

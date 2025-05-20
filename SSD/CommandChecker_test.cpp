@@ -12,6 +12,7 @@ public:
 	std::string op_erase = "E";
 	std::string op_read = "R";
 	std::string op_write = "W";
+	std::string op_flush = "F";
 
 	std::string addr_wrong_format = "12345678";
 	std::string addr_short = "0x1234";
@@ -20,6 +21,7 @@ public:
 
 	std::string lba_invalid = "100";
 	std::string lba = "1";
+	std::string lba_size = "5";
 
 	std::string exe = "ssd.exe";
 
@@ -28,12 +30,14 @@ public:
 
 TEST_F(CommandFixture,InvalidRange)
 {
-	EXPECT_FALSE(checker.isValidRange(100));
+	char* argv[] = { &exe[0], &op_write[0], &lba_invalid[0], &addr[0] };
+	EXPECT_FALSE(checker.isValidRange(argv));
 }
 
 TEST_F(CommandFixture,ValidRange)
 {
-	EXPECT_TRUE(checker.isValidRange(10));
+	char* argv[] = { &exe[0], &op_write[0], &lba[0], &addr[0] };
+	EXPECT_TRUE(checker.isValidRange(argv));
 }
 
 TEST_F(CommandFixture,InvalidOperator)
@@ -93,4 +97,36 @@ TEST_F(CommandFixture,ExecuteWithInvalidLba)
 	char* argv[] = { &exe[0], &op_write[0], &lba_invalid[0], &addr[0]};
 
 	EXPECT_FALSE(checker.execute(argc, argv));
+}
+
+TEST_F(CommandFixture, ExecuteWrite)
+{
+	int argc = 4;
+	char* argv[] = { &exe[0], &op_write[0], &lba[0], &addr[0]};
+
+	EXPECT_TRUE(checker.execute(argc, argv));
+}
+
+TEST_F(CommandFixture, ExecuteRead)
+{
+	int argc = 3;
+	char* argv[] = { &exe[0], &op_read[0], &lba[0] };
+
+	EXPECT_TRUE(checker.execute(argc, argv));
+}
+
+TEST_F(CommandFixture, ExecuteErase)
+{
+	int argc = 4;
+	char* argv[] = { &exe[0], &op_erase[0], &lba[0], &lba_size[0]};
+
+	EXPECT_TRUE(checker.execute(argc, argv));
+}
+
+TEST_F(CommandFixture, ExecuteFlush)
+{
+	int argc = 2;
+	char* argv[] = { &exe[0], &op_flush[0] };
+
+	EXPECT_TRUE(checker.execute(argc, argv));
 }
