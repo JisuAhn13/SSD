@@ -13,7 +13,10 @@ struct command {
 
 class CommandBuffer {
 public:
+    void createBufferDirectory(std::string& baseDir);
+    void createEmptyFiles(std::string& baseDir);
     CommandBuffer();
+    bool initializeBufferToFileLists();
     command getCommandFromFile(std::string fileName);
 
     void removeTxt(std::string& token);

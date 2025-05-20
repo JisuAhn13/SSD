@@ -77,9 +77,8 @@ command CommandBuffer::getCommandFromFile(std::string fileName) {
 	return ret;
 }
 
-// 생성자 
-CommandBuffer::CommandBuffer() {
-	std::string baseDir = "buffer";
+void CommandBuffer::createBufferDirectory(std::string& baseDir)
+{
 
 	// buffer 폴더 생성
 	if (!directoryExists(baseDir)) {
@@ -90,19 +89,10 @@ CommandBuffer::CommandBuffer() {
 			std::cout << "Created base directory: " << baseDir << std::endl;
 		}
 	}
+}
 
-	//현재경로에 파일 읽기
-	std::vector<std::string> bufferFileLists = getFileNamesInDirectory();
-
-	bool fileChecker = false;
-	for (const auto& fileName : bufferFileLists) {
-		if (bufferFileExists(fileName)) {
-			command cmd = getCommandFromFile(fileName);
-			buffer.push_back(cmd);
-			fileChecker = true;
-		}
-	}
-	if (fileChecker) return;
+void CommandBuffer::createEmptyFiles(std::string& baseDir)
+{
 
 	// 1_empty.txt ~ 5_empty.txt 파일 생성
 	for (int i = 1; i <= 5; ++i) {
@@ -122,4 +112,30 @@ CommandBuffer::CommandBuffer() {
 			std::cout << "File already exists: " << filePath << std::endl;
 		}
 	}
+}
+
+// 생성자 
+CommandBuffer::CommandBuffer() {
+	std::string baseDir = "buffer";
+	createBufferDirectory(baseDir);
+
+	if (initializeBufferToFileLists()) return;
+	createEmptyFiles(baseDir);
+}
+
+bool CommandBuffer::initializeBufferToFileLists()
+{
+	//현재경로에 파일 읽기
+	std::vector<std::string> bufferFileLists = getFileNamesInDirectory();
+
+	bool fileChecker = false;
+	for (const auto& fileName : bufferFileLists) {
+		if (bufferFileExists(fileName)) {
+			command cmd = getCommandFromFile(fileName);
+			buffer.push_back(cmd);
+			fileChecker = true;
+		}
+	}
+	if (fileChecker) return true;
+	return false;
 }
