@@ -53,7 +53,7 @@ TEST_F(CmdBufferFixture, BufferInitialReadOperation) {
     createTestFile("1_W_99_ABCDEF12.txt");
 
     CommandBuffer::CommandBuffer();
-    Command ret= cmdBuf.getBufferIndex(1);
+    command ret= cmdBuf.getBufferIndex(1);
     EXPECT_EQ('W', ret.op);
     EXPECT_EQ(99, ret.firstData);
     EXPECT_EQ(0xABCDEF12, ret.secondData);

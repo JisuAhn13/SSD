@@ -47,13 +47,13 @@ bool bufferFileExists(const std::string& fileName) {
 	std::regex pattern(R"([1-5]_.*\.txt)");
 	return std::regex_match(fileName, pattern);
 }
-Command CommandBuffer::getBufferIndex(int i) {
+command CommandBuffer::getBufferIndex(int i) {
 	return CommandBuffer::buffer[i];
 }
-Command CommandBuffer::getCommandFromFile(std::string fileName) {
+command CommandBuffer::getCommandFromFile(std::string fileName) {
 	std::stringstream ss(fileName);
 	std::string token;
-	Command ret = { 0, };
+	command ret = { 0, };
 
 	// '_'을 구분자로 문자열을 분리하여 벡터에 저장
 	while (std::getline(ss, token, '_')) {
@@ -97,7 +97,7 @@ CommandBuffer::CommandBuffer() {
 	bool fileChecker = false;
 	for (const auto& fileName : bufferFileLists) {
 		if (bufferFileExists(fileName)) {
-			Command cmd = getCommandFromFile(fileName);
+			command cmd = getCommandFromFile(fileName);
 			buffer.push_back(cmd);
 			fileChecker = true;
 		}
