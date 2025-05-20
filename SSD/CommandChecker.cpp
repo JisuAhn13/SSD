@@ -128,15 +128,21 @@ bool CommandChecker::isValidAddress(std::string addr)
 
 void ReadCommand::execute()
 {
-	__ssd.read(__lba);
+	CommandBuffer buffer;
+	command cmd{ 'R', __lba, 0 };
+	//buffer.enqueue(cmd);
 }
 
 void WriteCommand::execute()
 {
-	__ssd.write(__lba, __addr);
+	CommandBuffer buffer;
+	command cmd{ 'W', __lba, __addr };
+	//buffer.enqueue(cmd);
 }
 
 void EraseCommand::execute()
 {
-	__ssd.erase(__lba, __lba + __size);
+	CommandBuffer buffer;
+	command cmd{ 'E', __lba, __lba + __size - 1 };
+	//buffer.enqueue(cmd);
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "SSD_func.h"
+#include "commandBuffer.h"
 
 class Command {
 public:
@@ -26,7 +27,6 @@ public:
 protected:
 	Type_e __Type;
 	unsigned int __lba;
-	SSD __ssd;
 };
 
 class ReadCommand : public Command {
@@ -85,6 +85,4 @@ private:
 	const std::string op_read = "R";
 	const std::string op_write = "W";
 	const std::string op_erase = "E";
-
-	SSD ssd;
 };
