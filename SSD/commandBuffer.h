@@ -19,6 +19,9 @@ public:
     void clearVec();
     void fileWrite();
     void clearDir();
+    void eraseAlgorithm();
+    void mergeAlgorithm();
+    void optimizeCMD();
     std::vector<std::string> getFileNamesInDirectory();
 private:
     // 디렉토리 존재 여부 확인
