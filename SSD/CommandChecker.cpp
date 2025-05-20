@@ -30,6 +30,11 @@ bool CommandChecker::execute(int argc, char* argv[])
 		return executeRead(lba);
 	}
 
+	if (op == op_erase) {
+		std::string size = std::string(argv[3]);
+		return executeErase(lba, size);
+	}
+
 	return false;
 }
 
@@ -46,6 +51,35 @@ bool CommandChecker::executeWrite(std::string lba , std::string addr)
 	}
 
 	ssd.write((unsigned int)std::stoi(lba), (unsigned int)std::stoll(addr.substr(2), nullptr, 16));
+
+	return true;
+}
+
+bool CommandChecker::executeErase(std::string lba, std::string size)
+{
+	int start_lba = std::stoi(lba);
+	int size_lba = std::stoi(size);
+	int end_lba = start_lba + size_lba;
+
+	if (start_lba < 0 || size_lba < 0) {
+		writeOutputFile();
+		return false;
+	}
+
+	if (start_lba > 99 || end_lba > 99) {
+		writeOutputFile();
+		return false;
+	}
+
+	if (size_lba == 0) {
+		return false;
+	}
+
+	if (size_lba > 10) {
+		end_lba = start_lba + 9;
+	}
+
+	ssd.erase(start_lba, end_lba);
 
 	return true;
 }
@@ -70,7 +104,7 @@ bool CommandChecker::isValidRange(unsigned int LBA)
 
 bool CommandChecker::isValidOperator(std::string op)
 {
-	if (op == "W" || op == "R") {
+	if (op == "W" || op == "R" || op == "E") {
 		return true;
 	}
 
