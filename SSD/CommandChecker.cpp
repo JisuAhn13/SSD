@@ -3,9 +3,20 @@
 #include <fstream>
 #include <regex>
 
+const std::string output_filename = "ssd_output.txt";
+
+void writeOutputFile()
+{
+	std::ofstream fs;
+	fs.open(output_filename);
+	fs.clear();
+	fs << "ERROR";
+	fs.close();
+}
+
 bool CommandChecker::execute(int argc, char* argv[])
 {
-	if (argc > 4) {
+	if (argc > 4 || argc < 2) {
 		return false;
 	}
 
@@ -22,8 +33,8 @@ bool CommandChecker::execute(int argc, char* argv[])
 	}
 
 	if (op == op_write) {
-		std::string value = std::string(argv[3]);
-		return executeWrite(lba, value);
+		std::string addr = std::string(argv[3]);
+		return executeWrite(lba, addr);
 	}
 
 	if (op == op_read) {
@@ -40,17 +51,24 @@ bool CommandChecker::execute(int argc, char* argv[])
 
 bool CommandChecker::executeRead(std::string lba)
 {
-	ssd.read((unsigned int)std::stoi(lba));
+	unsigned int lba_val = (unsigned int)std::stoi(lba);
+	ReadCommand cmd{ lba_val };
+	cmd.execute();
+
 	return true;
 }
 
-bool CommandChecker::executeWrite(std::string lba , std::string addr)
+bool CommandChecker::executeWrite(std::string lba, std::string addr)
 {
 	if (isValidAddress(addr) == false) {
 		return false;
 	}
 
-	ssd.write((unsigned int)std::stoi(lba), (unsigned int)std::stoll(addr.substr(2), nullptr, 16));
+	unsigned int lba_val = (unsigned int)std::stoi(lba);
+	unsigned int addr_val = (unsigned int)std::stoll(addr.substr(2), nullptr, 16);
+
+	WriteCommand cmd{ lba_val, addr_val };
+	cmd.execute();
 
 	return true;
 }
@@ -79,18 +97,9 @@ bool CommandChecker::executeErase(std::string lba, std::string size)
 		end_lba = start_lba + 9;
 	}
 
-	ssd.erase(start_lba, end_lba);
+	EraseCommand cmd { (unsigned int)start_lba, (unsigned int)size_lba };
 
 	return true;
-}
-
-void CommandChecker::writeOutputFile()
-{
-	std::ofstream fs;
-	fs.open(output_filename);
-	fs.clear();
-	fs << "ERROR";
-	fs.close();
 }
 
 bool CommandChecker::isValidRange(unsigned int LBA)
@@ -115,4 +124,19 @@ bool CommandChecker::isValidAddress(std::string addr)
 {
 	std::regex pattern(R"(^0x[0-9A-Fa-f]{8}$)");
 	return std::regex_match(addr, pattern);
+}
+
+void ReadCommand::execute()
+{
+	__ssd.read(__lba);
+}
+
+void WriteCommand::execute()
+{
+	__ssd.write(__lba, __addr);
+}
+
+void EraseCommand::execute()
+{
+	__ssd.erase(__lba, __lba + __size);
 }
