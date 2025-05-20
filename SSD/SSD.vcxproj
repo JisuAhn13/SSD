@@ -127,6 +127,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="commandBuffer.cpp" />
+    <ClCompile Include="commandBuffer_Test.cpp" />
     <ClCompile Include="CommandChecker.cpp" />
     <ClCompile Include="CommandChecker_test.cpp" />
     <ClCompile Include="main.cpp" />
@@ -140,6 +142,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="commandBuffer.h" />
     <ClInclude Include="CommandChecker.h" />
     <ClInclude Include="SSD_func.h" />
   </ItemGroup>
