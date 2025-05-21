@@ -130,7 +130,7 @@ bool CommandBuffer::fastRead(unsigned int lba, unsigned int& value)
 		}
 
 		if (cmd.op == CMD_ERASE) {
-			if (cmd.firstData >= lba && (cmd.firstData + cmd.secondData - 1) <= lba) {
+			if (cmd.firstData >= lba && (cmd.firstData + cmd.secondData - 1) >= lba) {
 				value = 0x0;
 				return true;
 			}
