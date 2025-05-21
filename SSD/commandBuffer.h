@@ -1,11 +1,13 @@
 #pragma once
 #include <iostream>
-#include <windows.h>
 #include <string>
 #include <fstream>
 #include <vector>
 #include <unordered_set>
 #include "SSD_func.h"
+#include <windows.h>
+#include <set>
+#include <algorithm>
 
 enum {
     CMD_WRITE = 'W',
@@ -44,6 +46,7 @@ public:
     void clearVec();
     void fileWrite();
     void clearDir();
+    void copyBuffer(std::vector<BufferCommand> buf);
     void eraseAlgorithm();
     void mergeAlgorithm();
     void optimizeCMD();
