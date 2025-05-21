@@ -7,8 +7,8 @@ using namespace testing;
 class CmdBufferFixture : public ::testing::Test {
 protected:
     void SetUp() override {
-        cmdBuffer.clearVec();
-        cmdBuffer.clearDir();
+        cmdBuf.clearVec();
+        cmdBuf.clearDir();
     }
 
     // 파일이 존재하는지 확인하는 함수
@@ -24,12 +24,12 @@ protected:
         BufferCommand CMD4 = { 'W', 4, 0x23456789 };
         BufferCommand CMD5 = { 'E', 5, 7 };
 
-        cmdBuffer.clearVec();
-        cmdBuffer.pushCMD(CMD1);
-        cmdBuffer.pushCMD(CMD2);
-        cmdBuffer.pushCMD(CMD3);
-        cmdBuffer.pushCMD(CMD4);
-        cmdBuffer.pushCMD(CMD5);
+        cmdBuf.clearVec();
+        cmdBuf.pushCMD(CMD1);
+        cmdBuf.pushCMD(CMD2);
+        cmdBuf.pushCMD(CMD3);
+        cmdBuf.pushCMD(CMD4);
+        cmdBuf.pushCMD(CMD5);
     }
 
     std::vector<std::string> WriteandReturn() {
@@ -37,35 +37,35 @@ protected:
         
         feelCmdBuffer();
 
-        cmdBuffer.fileWrite();
+        cmdBuf.fileWrite();
         
-        filename = cmdBuffer.getFileNamesInDirectory();
+        filename = cmdBuf.getFileNamesInDirectory();
         
         sort(filename.begin(), filename.end());
 
         return filename;
     }
 
-    CommandBuffer cmdBuffer;
-};
-
-void createTestFile(const std::string& fileName, const std::string& content = "") {
-    std::string directoryPath = "buffer";
-    std::string filePath = directoryPath + "\\" + fileName;
-    if (GetFileAttributesA(directoryPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
-        if (!CreateDirectoryA(directoryPath.c_str(), NULL)) {
-            return;
+    void createTestFile(const std::string& fileName, const std::string& content = "") {
+        std::string directoryPath = "buffer";
+        std::string filePath = directoryPath + "\\" + fileName;
+        if (GetFileAttributesA(directoryPath.c_str()) == INVALID_FILE_ATTRIBUTES) {
+            if (!CreateDirectoryA(directoryPath.c_str(), NULL)) {
+                return;
+            }
+        }
+        std::ofstream outFile(filePath);
+        if (outFile.is_open()) {
+            outFile << content;
+            outFile.close();
         }
     }
-    std::ofstream outFile(filePath);
-    if (outFile.is_open()) {
-        outFile << content;
-        outFile.close();
-    }
-}
+
+    CommandBuffer& cmdBuf = CommandBuffer::getInstance();
+};
 
 TEST_F(CmdBufferFixture, FilesCreatedCorrectly) {
-    std::vector<std::string> bufferFileLists = cmdBuffer.getFileNamesInDirectory();
+    std::vector<std::string> bufferFileLists = cmdBuf.getFileNamesInDirectory();
 
     for (const auto& fileName : bufferFileLists) {
         ASSERT_TRUE(!fileName.empty());
@@ -81,7 +81,7 @@ TEST_F(CmdBufferFixture, BufferInitialReadOperation) {
     createTestFile("5_W_19_ACACCABA.txt");
 
     //creator test purpose 
-    CommandBuffer cmdBuf;
+    cmdBuf.initializeCommandBuffer();
     BufferCommand ret = cmdBuf.getBufferIndex(0);
     EXPECT_EQ('W', ret.op);
     EXPECT_EQ(99, ret.firstData);
@@ -92,31 +92,31 @@ TEST_F(CmdBufferFixture, full) {
     std::vector<BufferCommand> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
 
     for (auto c : write_commands) {
-        cmdBuffer.enqueue(c);
+        cmdBuf.enqueue(c);
     }
 
-    EXPECT_TRUE(cmdBuffer.isFull());
+    EXPECT_TRUE(cmdBuf.isFull());
 }
 
 TEST_F(CmdBufferFixture, notFull) {
     std::vector<BufferCommand> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3} };
 
     for (auto c : write_commands) {
-        cmdBuffer.enqueue(c);
+        cmdBuf.enqueue(c);
     }
 
-    EXPECT_FALSE(cmdBuffer.isFull());
+    EXPECT_FALSE(cmdBuf.isFull());
 }
 
 TEST_F(CmdBufferFixture, readWithoutOutputFile) {
     std::vector<BufferCommand> write_commands = { {CMD_WRITE, 1, 1}, {CMD_WRITE, 2, 2}, {CMD_WRITE, 3, 3}, {CMD_WRITE, 4, 4}, {CMD_WRITE, 5, 5} };
 
     for (auto c : write_commands) {
-        cmdBuffer.enqueue(c);
+        cmdBuf.enqueue(c);
     }
 
     BufferCommand cmd{ CMD_READ, 4, 0 };
-    cmdBuffer.enqueue(cmd);
+    cmdBuf.enqueue(cmd);
 }
 
 TEST_F(CmdBufferFixture, FileWriteSuccess) {
@@ -137,7 +137,7 @@ TEST_F(CmdBufferFixture, CheckEraseAlgorithmRemove) {
     createTestFile("5_E_1_5.txt");          // E 1~5 → 길이 5
 
     //creator test purpose 
-    CommandBuffer cmdBuf;
+    cmdBuf.initializeCommandBuffer();
     cmdBuf.eraseAlgorithm();
     BufferCommand ret = cmdBuf.getBufferIndex(0);
     EXPECT_EQ('E', ret.op);
