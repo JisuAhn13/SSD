@@ -11,73 +11,6 @@ bool CommandBuffer::fileExists(const std::string& path) {
 	return (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-std::vector<unsigned int> loadInitialNand(const std::string& filename) {
-	std::ifstream file(filename);
-	std::vector<unsigned int> nand(100, 0);
-	std::string line;
-	while (std::getline(file, line)) {
-		std::istringstream iss(line);
-		int lba;
-		std::string valHex;
-		if (!(iss >> lba >> valHex)) continue;
-		nand[lba] = std::stoul(valHex, nullptr, 16);
-	}
-	return nand;
-}
-
-void applyCommands(const std::vector<BufferCommand>& commands, std::vector<unsigned int>& nand) {
-	for (const auto& cmd : commands) {
-		if (cmd.op == 'W') {
-			nand[cmd.firstData] = cmd.secondData;
-		}
-		else if (cmd.op == 'E') {
-			for (unsigned int i = 0; i < cmd.secondData; ++i) {
-				if (cmd.firstData + i < nand.size()) {
-					nand[cmd.firstData + i] = 0;
-				}
-			}
-		}
-	}
-}
-
-bool nandEqual(const std::vector<unsigned int>& a, const std::vector<unsigned int>& b) {
-	return a == b;
-}
-
-std::vector<std::pair<int, int>> collectErasableRanges(const std::vector<BufferCommand>& commands) {
-	std::vector<std::pair<int, int>> ranges;
-	for (const auto& cmd : commands) {
-		if (cmd.op == 'E') {
-			int s = cmd.firstData;
-			int e = s + cmd.secondData - 1;
-			ranges.emplace_back(s, e);
-		}
-	}
-	std::sort(ranges.begin(), ranges.end());
-	std::vector<std::pair<int, int>> merged;
-	for (size_t i = 0; i < ranges.size(); ++i) {
-		int s = ranges[i].first;
-		int e = ranges[i].second;
-		if (!merged.empty() && s <= merged.back().second + 1) {
-			merged.back().second = std::max<int>(merged.back().second, e);
-		}
-		else {
-			merged.emplace_back(s, e);
-		}
-	}
-	std::vector<std::pair<int, int>> result;
-	for (size_t i = 0; i < merged.size(); ++i) {
-		int s = merged[i].first;
-		int e = merged[i].second;
-		if (e - s + 1 <= 10) {
-			result.emplace_back(s, e);
-		}
-	}
-	return result;
-}
-
-
-
 std::string CommandBuffer::removeTxt(std::string& filename)
 {
 
@@ -371,51 +304,66 @@ void CommandBuffer::eraseAlgorithm() {
 
 void CommandBuffer::mergeAlgorithm()
 {
-	const std::vector<BufferCommand>& original = this->buffer;
-	std::vector<std::pair<int, int>> mergedErasures = collectErasableRanges(original);
-	std::vector<unsigned int> nand = loadInitialNand("ssd_nand.txt");
-	applyCommands(original, nand);
-	const std::vector<unsigned int>& expectedNand = nand;
+	std::vector<BufferCommand> originalBuffer = this->buffer;
+	std::vector<BufferCommand> OptimizedCMDBuffer;
+	std::vector<std::pair<int, int>> ranges;
+	std::vector<size_t> eraseIndices;
 
-	std::vector<BufferCommand> nonEraseCommands;
-	for (const auto& cmd : original) {
-		if (cmd.op != 'E') {
-			nonEraseCommands.push_back(cmd);
+	for (size_t i = 0; i < originalBuffer.size(); ++i) {
+		const auto& cmd = originalBuffer[i];
+		if (cmd.op == 'E') {
+			int start = cmd.firstData;
+			int end = start + cmd.secondData - 1;
+			ranges.emplace_back(start, end);
+			eraseIndices.push_back(i);
 		}
 	}
 
-	std::vector<BufferCommand> bestCandidate = original;
+	std::vector<bool> used(ranges.size(), false);
+	std::vector<std::pair<int, int>> mergedRanges;
+	std::vector<size_t> mergedPositions;
 
-	std::vector<size_t> insertPos(nonEraseCommands.size() + 1);
-	for (size_t i = 0; i <= nonEraseCommands.size(); ++i) {
-		insertPos[i] = i;
+	for (size_t i = 0; i < ranges.size(); ++i) {
+		if (used[i]) continue;
+		int start = ranges[i].first;
+		int end = ranges[i].second;
+		size_t firstPos = eraseIndices[i];
+		used[i] = true;
+
+		for (size_t j = i + 1; j < ranges.size(); ++j) {
+			if (used[j]) continue;
+			unsigned int s = ranges[j].first;
+			unsigned int e = ranges[j].second;
+			if (s <= end + 1) {
+				int tempStart = std::min<unsigned int>(start, s);
+				int tempEnd = std::max<unsigned int>(end, e);
+				if (tempEnd - tempStart + 1 > 10) {
+					continue;
+				}
+				start = tempStart;
+				end = tempEnd;
+				firstPos = std::min<unsigned int>(firstPos, eraseIndices[j]);
+				used[j] = true;
+			}
+		}
+		mergedRanges.emplace_back(start, end);
+		mergedPositions.push_back(firstPos);
 	}
 
-	std::vector<std::pair<int, int>> erasePerm = mergedErasures;
-	do {
-		std::vector<size_t> insertionPermutation = insertPos;
-		do {
-			std::vector<BufferCommand> candidate = nonEraseCommands;
-			for (int k = static_cast<int>(erasePerm.size()) - 1; k >= 0; --k) {
-				size_t pos = insertionPermutation[k];
-				int s = erasePerm[k].first;
-				int e = erasePerm[k].second;
-				candidate.insert(candidate.begin() + pos, BufferCommand{ 'E', (unsigned int)s, (unsigned int)(e - s + 1) });
+	std::set<size_t> erasedSet(eraseIndices.begin(), eraseIndices.end());
+	size_t mergedIdx = 0;
+	for (size_t i = 0; i < originalBuffer.size(); ++i) {
+		if (erasedSet.count(i)) {
+			if (std::find(mergedPositions.begin(), mergedPositions.end(), i) != mergedPositions.end()) {
+				const auto& range = mergedRanges[mergedIdx++];
+				OptimizedCMDBuffer.push_back(BufferCommand{ 'E', static_cast<unsigned int>(range.first), static_cast<unsigned int>(range.second - range.first + 1) });
 			}
+			continue;
+		}
+		OptimizedCMDBuffer.push_back(originalBuffer[i]);
+	}
 
-			std::vector<unsigned int> nand = loadInitialNand("ssd_nand.txt");
-			applyCommands(candidate, nand);
-
-			if (nandEqual(nand, expectedNand)) {
-				this->copyBuffer(candidate);
-				return;
-			}
-
-		} while (std::next_permutation(insertPos.begin(), insertPos.begin() + erasePerm.size()));
-
-	} while (std::next_permutation(erasePerm.begin(), erasePerm.end()));
-
-	this->copyBuffer(original);
+	this->copyBuffer(OptimizedCMDBuffer);
 }
 
 void CommandBuffer::optimizeCMD() {
