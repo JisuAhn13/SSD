@@ -43,6 +43,9 @@ public:
         MAX_BUFFER_SIZE = 5,
     };
 
+    CommandBuffer();
+    ~CommandBuffer();
+
     // singleton structure
     static CommandBuffer& getInstance() {
         static CommandBuffer instance;
@@ -76,7 +79,7 @@ private:
     std::string removeTxt(std::string& token);
     void createEmptyFilesForRemaining(std::string& baseDir);
     BufferCommand getCommandFromFile(std::string fileName);
-    bool readinbuffer(unsigned int lba, unsigned int& value);
+    bool fastRead(unsigned int lba, unsigned int& value);
     void optimizeCMD();
 
     std::vector<BufferCommand> buffer;

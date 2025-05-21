@@ -1,6 +1,18 @@
 #include "commandBuffer.h"
 #include "SSD_func.h"
 
+CommandBuffer::CommandBuffer()
+{
+	// 0. Import buffer files (if not exist, create files)
+	initializeCommandBuffer();
+}
+
+CommandBuffer::~CommandBuffer()
+{
+	// 3. Export buffer files
+	fileWrite();
+}
+
 bool CommandBuffer::directoryExists(const std::string& path) {
 	DWORD ftyp = GetFileAttributesA(path.c_str());
 	return (ftyp != INVALID_FILE_ATTRIBUTES && (ftyp & FILE_ATTRIBUTE_DIRECTORY));
@@ -100,7 +112,7 @@ void CommandBuffer::initializeCommandBuffer() {
 	createEmptyFilesForRemaining(baseDir);
 }
 
-bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
+bool CommandBuffer::fastRead(unsigned int lba, unsigned int& value)
 {
 	for (auto iter = buffer.rbegin(); iter != buffer.rend(); ++iter) {
 		BufferCommand cmd = *iter;
@@ -112,7 +124,7 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 		}
 
 		if (cmd.op == CMD_ERASE) {
-			if (cmd.firstData >= lba && cmd.secondData <= lba) {
+			if (cmd.firstData >= lba && (cmd.firstData + cmd.secondData - 1) <= lba) {
 				value = 0x0;
 				return true;
 			}
@@ -124,8 +136,6 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 // Call from CommandChecker
 unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 {
-	// 0. Import buffer files (if not exist, create files)
-	initializeCommandBuffer();
 	// 1-1. If buffer is full(size:5), execute all commands
 	if (cmd.op == 'F' || isFull()) {
 		flush();
@@ -137,7 +147,7 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 		buffer.push_back(cmd);
 	}
 	else if (cmd.op == 'R') {
-		bool ret = readinbuffer(cmd.firstData, value);
+		bool ret = fastRead(cmd.firstData, value);
 		if (ret == false) {
 			// if data can be decided without reading ssd_nand.txt, then ssd read
 			value = ssd.read(cmd.firstData);
@@ -151,8 +161,6 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 	}
 	// 2. Optimize
 	optimizeCMD();
-	// 3. Export buffer files
-	fileWrite();
 	return value;
 }
 
@@ -225,20 +233,22 @@ void CommandBuffer::fileWrite() {
 	std::string baseDir = "buffer";
 	std::string filePath;
 
-	this->clearDir();
+	clearDir();
 
 	for (int idx = 1; idx <= this->buffer.size(); idx++) {
-		filePath = baseDir + "\\" + std::to_string(idx) + "_" + this->buffer[idx - 1].op + "_"
-			+ std::to_string(this->buffer[idx - 1].firstData) + "_";
+		const BufferCommand cmd = this -> buffer[idx - 1];
 
-		if (this->buffer[idx - 1].op == 'E') {
-			filePath += std::to_string(this->buffer[idx - 1].secondData);
+		filePath = baseDir + "\\" + std::to_string(idx) + "_";
+		filePath += std::string(1, cmd.op) + "_" + std::to_string(cmd.firstData) + "_";
+
+		if (cmd.op == 'E') {
+			filePath += std::to_string(cmd.secondData);
 		}
 		else {
 			std::ostringstream oss;
 			oss << std::uppercase
 				<< std::hex
-				<< this->buffer[idx - 1].secondData;
+				<< cmd.secondData;
 
 			filePath += oss.str();
 		}
@@ -246,15 +256,8 @@ void CommandBuffer::fileWrite() {
 
 		if (!fileExists(filePath)) {
 			std::ofstream outFile(filePath);
-			if (outFile) {
-				outFile.close();
-			}
-			else {
-				throw CommandBufferException("Failed to create empty file: " + filePath);
-			}
 		}
 	}
-
 	createEmptyFilesForRemaining(baseDir);
 }
 

@@ -1,11 +1,16 @@
 #include "CommandChecker.h"
-#include "SSD_func.h"
 #include <fstream>
 #include <regex>
 
 const std::string output_filename = "ssd_output.txt";
+const std::string op_read = "R";
+const std::string op_write = "W";
+const std::string op_erase = "E";
+const std::string op_flush = "F";
 
-void writeOutputFile()
+std::vector<std::string> VALID_CMD{ op_write, op_read, op_erase, op_flush };
+
+void CommandChecker::writeOutputFile()
 {
 	std::ofstream fs;
 	fs.open(output_filename);
@@ -14,78 +19,75 @@ void writeOutputFile()
 	fs.close();
 }
 
-bool CommandChecker::execute(int argc, char* argv[])
+bool CommandChecker::isValidOperator(std::string op)
 {
-	if (argc > 4 || argc < 2) {
+	if (std::find(VALID_CMD.begin(), VALID_CMD.end(), op) == VALID_CMD.end()) {
 		return false;
 	}
 
-	std::string op = std::string(argv[1]);
+	return true;
+}
 
-	if (isValidOperator(op) == false) {
+bool CommandChecker::isValidArgc(std::string op, unsigned int argc)
+{
+	bool result = true;
+	if (op == op_write) {
+		result = (argc == 4);
+	}
+	else if (op == op_read) {
+		result = (argc == 3);
+	}
+	else if (op == op_erase) {
+		result = (argc == 4);
+	}
+	else if (op == op_flush) {
+		result = (argc == 2);
+	}
+	return result;
+}
+
+bool CommandChecker::isValidRange(std::string lba)
+{
+	int lba_value = 0;
+	try {
+		lba_value = stoi(lba);
+	}
+	catch (std::exception e) {
 		return false;
 	}
 
-	if (isValidRange(argv) == false) {
+	if (lba_value < 0 || lba_value > 99) {
 		writeOutputFile();
 		return false;
 	}
-
-	if (op == op_write) {
-		std::string lba = std::string(argv[2]);
-		std::string addr = std::string(argv[3]);
-		return executeWrite(lba, addr);
-	}
-
-	if (op == op_read) {
-		std::string lba = std::string(argv[2]);
-		return executeRead(lba);
-	}
-
-	if (op == op_erase) {
-		std::string lba = std::string(argv[2]);
-		std::string size = std::string(argv[3]);
-		return executeErase(lba, size);
-	}
-
-	if (op == op_flush) {
-		return executeFlush();
-	}
-
-	return false;
-}
-
-bool CommandChecker::executeRead(std::string lba)
-{
-	unsigned int lba_val = (unsigned int)std::stoi(lba);
-	ReadCommand cmd{ lba_val };
-	cmd.execute();
-
 	return true;
 }
 
-bool CommandChecker::executeWrite(std::string lba, std::string addr)
+bool CommandChecker::isValidRange(std::string lba, std::string size)
 {
-	if (isValidAddress(addr) == false) {
+	if (isValidRange(lba) == false) {
 		return false;
 	}
 
-	unsigned int lba_val = (unsigned int)std::stoi(lba);
-	unsigned int addr_val = (unsigned int)std::stoll(addr.substr(2), nullptr, 16);
+	int start_lba = 0;
+	try {
+		start_lba = std::stoi(lba);
+	}
+	catch (std::exception e) {
+		return false;
+	}
 
-	WriteCommand cmd{ lba_val, addr_val };
-	cmd.execute();
-
-	return true;
-}
-
-bool CommandChecker::executeErase(std::string lba, std::string size)
-{
-	int start_lba = std::stoi(lba);
-	int size_lba = std::stoi(size);
+	int size_lba = 0;
+	try {
+		size_lba = std::stoi(size);
+	}
+	catch (std::exception e) {
+		return false;
+	}
+	size_lba = (size_lba > 10) ? 10 : size_lba;
 	int end_lba = start_lba + size_lba - 1;
 
-	if (start_lba < 0 || size_lba < 0) {
+	if (size_lba < 0) {
 		writeOutputFile();
 		return false;
 	}
@@ -98,15 +100,44 @@ bool CommandChecker::executeErase(std::string lba, std::string size)
 	if (size_lba == 0) {
 		return false;
 	}
+}
 
-	if (size_lba > 10) {
-		end_lba = start_lba + 9;
+bool CommandChecker::isValidAddress(std::string addr)
+{
+	std::regex pattern(R"(^0x[0-9A-Fa-f]{8}$)");
+	return std::regex_match(addr, pattern);
+}
+
+bool CommandChecker::execute(int argc, char* argv[])
+{
+	std::string op = std::string(argv[1]);
+
+	if (isValidOperator(op) == false) {
+		return false;
 	}
 
-	EraseCommand cmd { (unsigned int)start_lba, (unsigned int)size_lba };
-	cmd.execute();
+	if (isValidArgc(op, argc) == false) {
+		return false;
+	}
 
-	return true;
+	if (op == op_write) {
+		return executeWrite(argv);
+	}
+
+	if (op == op_read) {
+		return executeRead(argv);
+	}
+
+	if (op == op_erase) {
+
+		return executeErase(argv);
+	}
+
+	if (op == op_flush) {
+		return executeFlush();
+	}
+
+	return false;
 }
 
 bool CommandChecker::executeFlush()
@@ -117,35 +148,92 @@ bool CommandChecker::executeFlush()
 	return true;
 }
 
-bool CommandChecker::isValidRange(char* argv[])
+bool CommandChecker::executeErase(char* argv[])
 {
-	std::string op = std::string(argv[1]);
-	if (op == op_flush) {
-		return true;
-	}
-
 	std::string lba = std::string(argv[2]);
-	int lba_value = stoi(lba);
-	if (lba_value < 0 || lba_value > 99) {
+	std::string size = std::string(argv[3]);
+
+	if (isValidRange(lba, size) == false) {
 		return false;
 	}
+
+	int start_lba = 0;
+	try {
+		start_lba = std::stoi(lba);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
+
+	int size_lba = 0;
+	try {
+		size_lba = std::stoi(size);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
+	size_lba = (size_lba <= 10) ? size_lba : 10;
+	int end_lba = start_lba + size_lba - 1;
+
+	EraseCommand cmd{ (unsigned int)start_lba, (unsigned int)size_lba };
+	cmd.execute();
 
 	return true;
 }
 
-bool CommandChecker::isValidOperator(std::string op)
+bool CommandChecker::executeRead(char* argv[])
 {
-	if (op == "W" || op == "R" || op == "E" || op == "F") {
-		return true;
+	std::string lba = std::string(argv[2]);
+	if (isValidRange(lba) == false) {
+		return false;
 	}
 
-	return false;
+	unsigned int lba_val = 0;
+	try {
+		lba_val = (unsigned int)std::stoi(lba);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
+
+	ReadCommand cmd{ lba_val };
+	cmd.execute();
+
+	return true;
 }
 
-bool CommandChecker::isValidAddress(std::string addr)
+bool CommandChecker::executeWrite(char* argv[])
 {
-	std::regex pattern(R"(^0x[0-9A-Fa-f]{8}$)");
-	return std::regex_match(addr, pattern);
+	std::string lba = std::string(argv[2]);
+	if (isValidRange(lba) == false) {
+		return false;
+	}
+
+	std::string addr = std::string(argv[3]);
+	if (isValidAddress(addr) == false) {
+		return false;
+	}
+
+	unsigned int lba_val = 0;
+	try {
+		lba_val = (unsigned int)std::stoi(lba);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
+
+	unsigned int addr_val = 0;
+	try {
+		addr_val = (unsigned int)std::stoll(addr.substr(2), nullptr, 16);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
+
+	WriteCommand cmd{ lba_val, addr_val };
+	cmd.execute();
+
+	return true;
 }
 
 void ReadCommand::execute()
@@ -172,6 +260,6 @@ void EraseCommand::execute()
 void FlushCommand::execute()
 {
 	CommandBuffer buffer;
-	BufferCommand cmd{ 'F', __lba, 0 };
+	BufferCommand cmd{ 'F', 0, 0 };
 	buffer.enqueue(cmd);
 }

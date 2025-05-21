@@ -8,6 +8,14 @@ public:
 
 	}
 
+	bool RunTest(const std::vector<std::string>& args) {
+		std::vector<char*> argv;
+		for (auto& it : args) {
+			argv.push_back(const_cast<char*>(it.c_str()));
+		}
+		return checker.execute(argv.size(), argv.data());
+	}
+
 	std::string op_invalid = "A";
 	std::string op_erase = "E";
 	std::string op_read = "R";
@@ -22,111 +30,153 @@ public:
 	std::string lba_invalid = "100";
 	std::string lba = "1";
 	std::string lba_size = "5";
+	std::string lba_size_large = "11";
 
 	std::string exe = "ssd.exe";
 
 	CommandChecker checker;
 };
 
-TEST_F(CommandFixture,InvalidRange)
-{
-	char* argv[] = { &exe[0], &op_write[0], &lba_invalid[0], &addr[0] };
-	EXPECT_FALSE(checker.isValidRange(argv));
-}
-
-TEST_F(CommandFixture,ValidRange)
-{
-	char* argv[] = { &exe[0], &op_write[0], &lba[0], &addr[0] };
-	EXPECT_TRUE(checker.isValidRange(argv));
-}
-
 TEST_F(CommandFixture,InvalidOperator)
 {
-	EXPECT_FALSE(checker.isValidOperator(op_invalid));
+	std::vector<std::string> args{ exe, op_invalid, lba_invalid, addr };
+
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture,WriteOperator)
+TEST_F(CommandFixture, Read)
 {
-	EXPECT_TRUE(checker.isValidOperator(op_write));
+	std::vector<std::string> args{ exe, op_read, lba };
+
+	bool result = RunTest(args);
+
+	EXPECT_TRUE(result);
 }
 
-TEST_F(CommandFixture,ReadOperator)
+TEST_F(CommandFixture, ReadInvalidArgc)
 {
-	EXPECT_TRUE(checker.isValidOperator(op_read));
+	std::vector<std::string> args{ exe, op_read, lba, addr };
+
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture,InvalidAddressPrefix)
+TEST_F(CommandFixture, ReadInvalidLba)
 {
-	EXPECT_FALSE(checker.isValidAddress(addr_wrong_format));
+	std::vector<std::string> args{ exe, op_read, lba_invalid };
+
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture,InvalidLongAddress)
+TEST_F(CommandFixture, Write)
 {
-	EXPECT_FALSE(checker.isValidAddress(addr_long));
+	std::vector<std::string> args{ exe, op_write, lba, addr };
+
+	bool result = RunTest(args);
+
+	EXPECT_TRUE(result);
 }
 
-TEST_F(CommandFixture,InvalidShortAddress)
+TEST_F(CommandFixture, WriteInvalidArgc)
 {
-	EXPECT_FALSE(checker.isValidAddress(addr_short));
+	std::vector<std::string> args{ exe, op_write, lba };
+
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture,ValidAddress)
+TEST_F(CommandFixture, WriteInvalidLba)
 {
-	EXPECT_TRUE(checker.isValidAddress(addr));
+	std::vector<std::string> args{ exe, op_write, lba_invalid, addr };
+
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture,ExecuteWithInvalidArgc)
+TEST_F(CommandFixture, WriteWrongAddrFormat)
 {
-	int argc = 5;
-	char* argv[] = { &exe[0], &op_write[0], &lba[0], &addr[0]};
+	std::vector<std::string> args{ exe, op_write, lba, addr_wrong_format };
 
-	EXPECT_FALSE(checker.execute(argc, argv));
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture,ExecuteWithInvalidOperator)
+TEST_F(CommandFixture, WriteWrongAddrShort)
 {
-	int argc = 4;
-	char* argv[] = { &exe[0], &op_invalid[0], &lba[0], &addr[0] };
+	std::vector<std::string> args{ exe, op_write, lba, addr_short };
 
-	EXPECT_FALSE(checker.execute(argc, argv));
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture,ExecuteWithInvalidLba)
+TEST_F(CommandFixture, WriteWrongAddrLong)
 {
-	int argc = 4;
-	char* argv[] = { &exe[0], &op_write[0], &lba_invalid[0], &addr[0]};
+	std::vector<std::string> args{ exe, op_write, lba, addr_long };
 
-	EXPECT_FALSE(checker.execute(argc, argv));
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture, ExecuteWrite)
+TEST_F(CommandFixture, Erase)
 {
-	int argc = 4;
-	char* argv[] = { &exe[0], &op_write[0], &lba[0], &addr[0]};
+	std::vector<std::string> args{ exe, op_erase, lba, lba_size };
 
-	EXPECT_TRUE(checker.execute(argc, argv));
+	bool result = RunTest(args);
+
+	EXPECT_TRUE(result);
 }
 
-TEST_F(CommandFixture, ExecuteRead)
+TEST_F(CommandFixture, EraseInvalidArgc)
 {
-	int argc = 3;
-	char* argv[] = { &exe[0], &op_read[0], &lba[0] };
+	std::vector<std::string> args{ exe, op_erase, lba };
 
-	EXPECT_TRUE(checker.execute(argc, argv));
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture, ExecuteErase)
+TEST_F(CommandFixture, EraseInvalidLba)
 {
-	int argc = 4;
-	char* argv[] = { &exe[0], &op_erase[0], &lba[0], &lba_size[0]};
+	std::vector<std::string> args{ exe, op_erase, lba_invalid, lba_size };
 
-	EXPECT_TRUE(checker.execute(argc, argv));
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
 
-TEST_F(CommandFixture, ExecuteFlush)
+TEST_F(CommandFixture, EraseILargeLbaSize)
 {
-	int argc = 2;
-	char* argv[] = { &exe[0], &op_flush[0] };
+	std::vector<std::string> args{ exe, op_erase, lba, lba_size_large };
 
-	EXPECT_TRUE(checker.execute(argc, argv));
+	bool result = RunTest(args);
+
+	EXPECT_TRUE(result);
+}
+
+TEST_F(CommandFixture, Flush)
+{
+	std::vector<std::string> args{ exe, op_flush };
+
+	bool result = RunTest(args);
+
+	EXPECT_TRUE(result);
+}
+
+TEST_F(CommandFixture, FlushInvalidArgc)
+{
+	std::vector<std::string> args{ exe, op_flush, lba };
+
+	bool result = RunTest(args);
+
+	EXPECT_FALSE(result);
 }
