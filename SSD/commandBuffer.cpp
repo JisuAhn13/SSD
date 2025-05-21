@@ -1,6 +1,18 @@
 #include "commandBuffer.h"
 #include "SSD_func.h"
 
+CommandBuffer::CommandBuffer()
+{
+	// 0. Import buffer files (if not exist, create files)
+	initializeCommandBuffer();
+}
+
+CommandBuffer::~CommandBuffer()
+{
+	// 3. Export buffer files
+	fileWrite();
+}
+
 bool CommandBuffer::directoryExists(const std::string& path) {
 	DWORD ftyp = GetFileAttributesA(path.c_str());
 	return (ftyp != INVALID_FILE_ATTRIBUTES && (ftyp & FILE_ATTRIBUTE_DIRECTORY));
@@ -113,7 +125,7 @@ void CommandBuffer::initializeCommandBuffer() {
 	makeEmptyFiles(baseDir);
 }
 
-bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
+bool CommandBuffer::fastRead(unsigned int lba, unsigned int& value)
 {
 	for (auto iter = buffer.rbegin(); iter != buffer.rend(); ++iter) {
 		BufferCommand cmd = *iter;
@@ -125,7 +137,7 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 		}
 
 		if (cmd.op == CMD_ERASE) {
-			if (cmd.firstData >= lba && cmd.secondData <= lba) {
+			if (cmd.firstData >= lba && (cmd.firstData + cmd.secondData - 1) <= lba) {
 				value = 0x0;
 				return true;
 			}
@@ -137,9 +149,6 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 // Call from CommandChecker
 unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 {
-	// 0. Import buffer files (if not exist, create files)
-	initializeCommandBuffer();
-
 	// 1-1. If buffer is full(size:5), execute all commands
 	if (cmd.op == 'F' || isFull()) {
 		flush();
@@ -152,7 +161,7 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 		buffer.push_back(cmd);
 	}
 	else if (cmd.op == 'R') {
-		bool ret = readinbuffer(cmd.firstData, value);
+		bool ret = fastRead(cmd.firstData, value);
 		if (ret == false) {
 			// if data can be decided without reading ssd_nand.txt, then ssd read
 			value = ssd.read(cmd.firstData);
@@ -164,9 +173,6 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 
 	// 2. Optimize
 	optimizeCMD();
-
-	// 3. Export buffer files
-	fileWrite();
 
 	return value;
 }
