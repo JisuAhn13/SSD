@@ -141,6 +141,9 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 			// if data can be decided without reading ssd_nand.txt, then ssd read
 			value = ssd.read(cmd.firstData);
 		}
+		else {
+			ssd.recordFile(cmd.firstData, value);
+		}
 	}
 	else {
 		// Invalid Operator
