@@ -16,13 +16,6 @@ void validateFileOpen(std::ifstream& inFile)
     }
 }
 
-void checkLBAValidity(uint LBA) {
-    if (LBA < 0 || LBA > 99) {
-        std::cerr << "invalide LBA Address Fail" << std::endl;
-        throw std::exception();
-    }
-}
-
 uint SSD::readDataFromLBA(std::ifstream& inFile, const uint& LBA)
 {
     validateFileOpen(inFile);
@@ -61,7 +54,6 @@ void SSD::recordFile(uint LBA, uint data) {
 
 uint SSD::read(uint LBA) {
     std::ifstream inFile(this->getDataFileName());
-    checkLBAValidity(LBA);
 
     uint readData = readDataFromLBA(inFile, LBA);
     inFile.close();
@@ -121,7 +113,7 @@ void SSD::write(unsigned int LBA, unsigned int Val) {
 }
 
 void SSD::erase(uint StartLBA, uint Size) {
-    for (int idx = 0; idx < Size; idx++) {
+    for (uint idx = 0; idx < Size; idx++) {
         this->write(StartLBA+idx, 0x00000000);
     }
 }

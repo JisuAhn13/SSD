@@ -79,20 +79,6 @@ void CommandBuffer::copyBuffer(std::vector<BufferCommand> buf) {
 	}
 }
 
-void CommandBuffer::makeEmptyFiles(std::string& baseDir)
-{
-	for (int i = 1; i <= 5; ++i) {
-		std::string filePath = baseDir + "\\" + std::to_string(i) + "_empty.txt";
-
-		if (!fileExists(filePath)) {
-			std::ofstream outFile(filePath);
-			if (outFile) {
-				outFile.close();
-			}
-		}
-	}
-}
-
 bool CommandBuffer::fillCommandBufferWithFileNames()
 {
 	std::vector<std::string> bufferFileLists = getFileNamesInDirectory();
@@ -101,7 +87,8 @@ bool CommandBuffer::fillCommandBufferWithFileNames()
 	for (const auto& fileName : bufferFileLists) {
 		if (bufferFileExists(fileName)) {
 			BufferCommand cmd = getCommandFromFile(fileName);
-			buffer.push_back(cmd);
+			if(cmd.op=='W'|| cmd.op=='E')
+				buffer.push_back(cmd);
 			fileChecker = true;
 		}
 	}
@@ -112,7 +99,7 @@ bool CommandBuffer::createDirectory(std::string& baseDir)
 {
 	if (!directoryExists(baseDir)) {
 		if (!CreateDirectoryA(baseDir.c_str(), NULL)) {
-			return true;
+			throw CommandBufferException("Failed to create directory: " + baseDir);
 		}
 	}
 	return false;
@@ -122,7 +109,7 @@ void CommandBuffer::initializeCommandBuffer() {
 	std::string baseDir = "buffer";
 	if (createDirectory(baseDir)) return;
 	if (fillCommandBufferWithFileNames()) return;
-	makeEmptyFiles(baseDir);
+	createEmptyFilesForRemaining(baseDir);
 }
 
 bool CommandBuffer::fastRead(unsigned int lba, unsigned int& value)
@@ -154,7 +141,6 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 		flush();
 		if (cmd.op == 'F') return 0;
 	}
-
 	// 1-2. Enqueue command to buffer
 	unsigned int value = 0;
 	if (cmd.op == 'W' || cmd.op == 'E') {
@@ -166,14 +152,15 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 			// if data can be decided without reading ssd_nand.txt, then ssd read
 			value = ssd.read(cmd.firstData);
 		}
+		else {
+			ssd.recordFile(cmd.firstData, value);
+		}
 	}
 	else {
 		// Invalid Operator
 	}
-
 	// 2. Optimize
 	optimizeCMD();
-
 	return value;
 }
 
@@ -225,6 +212,23 @@ void CommandBuffer::clearDir() {
 	FindClose(hFind);
 }
 
+void CommandBuffer::createEmptyFilesForRemaining(std::string& baseDir)
+{
+	for (int idx = (int)this->buffer.size() + 1; idx <= 5; idx++) {
+		std::string filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
+
+		if (!fileExists(filePath)) {
+			std::ofstream outFile(filePath);
+			if (outFile) {
+				outFile.close();
+			}
+			else {
+				throw CommandBufferException("Failed to create file: " + filePath);
+			}
+		}
+	}
+}
+
 void CommandBuffer::fileWrite() {
 	std::string baseDir = "buffer";
 	std::string filePath;
@@ -254,14 +258,7 @@ void CommandBuffer::fileWrite() {
 			std::ofstream outFile(filePath);
 		}
 	}
-
-	for (int idx = (int)this->buffer.size() + 1; idx <= 5; idx++) {
-		filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
-
-		if (!fileExists(filePath)) {
-			std::ofstream outFile(filePath);
-		}
-	}
+	createEmptyFilesForRemaining(baseDir);
 }
 
 void CommandBuffer::eraseAlgorithm() {
@@ -270,12 +267,14 @@ void CommandBuffer::eraseAlgorithm() {
 
 	for (auto it = buffer.rbegin(); it != buffer.rend(); ++it) {
 		bool overlaps = false;
-
+		int overlapCnt = 0;
 		if (it->op == 'E') {
-			for (uint addr = it->firstData; addr <= it->secondData; ++addr) {
+			for (uint addr = it->firstData; addr <= it->secondData + it->firstData - 1 ; ++addr) {
 				if (affectedAddresses.count(addr)) {
+					overlapCnt++;
+				}
+				if (overlapCnt == it->secondData) {
 					overlaps = true;
-					break;
 				}
 			}
 
