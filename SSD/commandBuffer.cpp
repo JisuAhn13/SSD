@@ -87,6 +87,7 @@ bool CommandBuffer::fillCommandBufferWithFileNames()
 	for (const auto& fileName : bufferFileLists) {
 		if (bufferFileExists(fileName)) {
 			BufferCommand cmd = getCommandFromFile(fileName);
+
 			if (cmd.op == 'W' || cmd.op == 'E')
 				buffer.push_back(cmd);
 			fileChecker = true;
