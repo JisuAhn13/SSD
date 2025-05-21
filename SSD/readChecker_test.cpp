@@ -28,9 +28,8 @@ TEST_F(SSDReadFunctionTest, ReadLBA5) {
 TEST_F(SSDReadFunctionTest, ReadValueChangeLBA) {
     uint lba = 7;
     ssd->write(lba, 0x12347777);
-
-
     ssd->write(lba, 0x12377777);
+
     EXPECT_EQ(ssd->read(lba), 0x12377777);
 }
 

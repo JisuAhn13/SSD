@@ -7,6 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SSD", "SSD\SSD.vcxproj", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "솔루션 항목", "솔루션 항목", "{99ACEC3B-1BEE-40F8-933B-299FB8E5F464}"
 	ProjectSection(SolutionItems) = preProject
+		.editerconfig = .editerconfig
 		.gitingore = .gitingore
 	EndProjectSection
 EndProject
