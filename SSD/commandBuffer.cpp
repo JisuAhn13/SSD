@@ -266,10 +266,12 @@ void CommandBuffer::eraseAlgorithm() {
 	std::vector<BufferCommand> result;
 
 	for (auto it = buffer.rbegin(); it != buffer.rend(); ++it) {
+		uint start = it->firstData;
+		uint end = it->firstData + it->secondData - 1;
 		bool overlaps = false;
 		int overlapCnt = 0;
 		if (it->op == 'E') {
-			for (uint addr = it->firstData; addr <= it->secondData + it->firstData - 1 ; ++addr) {
+			for (uint addr = start; addr <= end; ++addr) {
 				if (affectedAddresses.count(addr)) {
 					overlapCnt++;
 				}
@@ -279,7 +281,7 @@ void CommandBuffer::eraseAlgorithm() {
 			}
 
 			if (!overlaps) {
-				for (uint addr = it->firstData; addr <= it->secondData; ++addr) {
+				for (uint addr = start; addr <= end; ++addr) {
 					affectedAddresses.insert(addr);
 				}
 				result.push_back(*it);

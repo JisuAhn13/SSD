@@ -71,7 +71,7 @@ TEST_F(CmdBufferFixture, FilesCreatedCorrectly) {
     }
 }
 
-TEST_F(CmdBufferFixture, full2) {
+TEST_F(CmdBufferFixture, full1) {
     std::vector<BufferCommand> write_commands = { {CMD_WRITE, 1, 0x11111111} , {CMD_WRITE, 2, 0x22222222} };
 
     for (auto c : write_commands) {
@@ -82,6 +82,23 @@ TEST_F(CmdBufferFixture, full2) {
     EXPECT_EQ('W', ret.op);
     EXPECT_EQ(1, ret.firstData);
     EXPECT_EQ(0x11111111, ret.secondData);
+}
+
+
+TEST_F(CmdBufferFixture, full2) {
+    std::vector<BufferCommand> write_commands = { {CMD_WRITE, 0, 0x12345678} ,
+        {CMD_WRITE, 1, 0x23456789} ,
+        {CMD_WRITE, 2, 0x34567891},
+        {CMD_ERASE, 0, 1} };
+
+    for (auto c : write_commands) {
+        cmdBuf.enqueue(c);
+    }
+
+    BufferCommand ret = cmdBuf.getBufferIndex(0);
+    EXPECT_EQ('W', ret.op);
+    EXPECT_EQ(1, ret.firstData);
+    EXPECT_EQ(0x23456789, ret.secondData);
 }
 
 TEST_F(CmdBufferFixture, BufferInitialReadOperation) {
