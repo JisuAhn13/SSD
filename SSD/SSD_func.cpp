@@ -11,8 +11,7 @@ void removeHexPrefix(std::string& data)
 void validateFileOpen(std::ifstream& inFile)
 {
     if (!inFile) {
-        std::cerr << "can't open file" << std::endl;
-        throw(std::exception());
+        ;
     }
 }
 
@@ -30,8 +29,7 @@ uint SSD::readDataFromLBA(std::ifstream& inFile, const uint& LBA)
             return std::stoul(data, nullptr, 16);
         }
     }
-    std::cerr << "search Fail" << std::endl;
-    throw std::exception();
+    return 0;
 }
 
 std::string SSD::getOuputFileName() {

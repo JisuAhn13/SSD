@@ -100,6 +100,7 @@ bool CommandChecker::isValidRange(std::string lba, std::string size)
 	if (size_lba == 0) {
 		return false;
 	}
+	return true;
 }
 
 bool CommandChecker::isValidAddress(std::string addr)
