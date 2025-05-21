@@ -271,12 +271,14 @@ void CommandBuffer::eraseAlgorithm() {
 
 	for (auto it = buffer.rbegin(); it != buffer.rend(); ++it) {
 		bool overlaps = false;
-
+		int overlapCnt = 0;
 		if (it->op == 'E') {
-			for (uint addr = it->firstData; addr <= it->secondData; ++addr) {
+			for (uint addr = it->firstData; addr <= it->secondData + it->firstData - 1 ; ++addr) {
 				if (affectedAddresses.count(addr)) {
+					overlapCnt++;
+				}
+				if (overlapCnt == it->secondData) {
 					overlaps = true;
-					break;
 				}
 			}
 
