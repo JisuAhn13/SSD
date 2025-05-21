@@ -139,6 +139,7 @@ bool CommandChecker::executeErase(char* argv[])
 
 	int start_lba = std::stoi(lba);
 	int size_lba = std::stoi(size);
+	size_lba = (size_lba <= 10) ? size_lba : 10;
 	int end_lba = start_lba + size_lba - 1;
 
 	EraseCommand cmd{ (unsigned int)start_lba, (unsigned int)size_lba };
@@ -183,38 +184,25 @@ bool CommandChecker::executeWrite(char* argv[])
 	return true;
 }
 
-#include "SSD_func.h"
 void ReadCommand::execute()
 {
-	//CommandBuffer buffer;
-	//BufferCommand cmd{ 'R', __lba, 0 };
-	//buffer.enqueue(cmd);;
-
-	std::cout << __func__ << " " << __lba << " " << std::endl;
-	SSD ssd;
-	ssd.read(__lba);
+	CommandBuffer buffer;
+	BufferCommand cmd{ 'R', __lba, 0 };
+	buffer.enqueue(cmd);;
 }
 
 void WriteCommand::execute()
 {
-	//CommandBuffer buffer;
-	//BufferCommand cmd{ 'W', __lba, __addr };
-	//buffer.enqueue(cmd);
-
-	std::cout << __func__ << " " << __lba << " " << __addr << " " << std::endl;
-	SSD ssd;
-	ssd.write(__lba, __addr);
+	CommandBuffer buffer;
+	BufferCommand cmd{ 'W', __lba, __addr };
+	buffer.enqueue(cmd);
 }
 
 void EraseCommand::execute()
 {
-	//CommandBuffer buffer;
-	//BufferCommand cmd{ 'E', __lba, __size};
-	//buffer.enqueue(cmd);
-
-	std::cout << __func__ << " " << __lba << " " << __size << " " << std::endl;
-	SSD ssd;
-	ssd.erase(__lba, __size);
+	CommandBuffer buffer;
+	BufferCommand cmd{ 'E', __lba, __size};
+	buffer.enqueue(cmd);
 }
 
 void FlushCommand::execute()
