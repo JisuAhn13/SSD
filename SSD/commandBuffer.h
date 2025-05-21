@@ -6,6 +6,8 @@
 #include <vector>
 #include <unordered_set>
 #include "SSD_func.h"
+#include <set>
+#include <algorithm>
 
 enum {
     CMD_WRITE = 'W',
@@ -43,6 +45,7 @@ public:
     void pushCMD(const BufferCommand cmd);
     void clearVec();
     void clearDir();
+    void copyBuffer(std::vector<BufferCommand> buf);
     void fileWrite();
     void eraseAlgorithm();
     void mergeAlgorithm();

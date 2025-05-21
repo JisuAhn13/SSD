@@ -34,13 +34,13 @@ protected:
 
     std::vector<std::string> WriteandReturn() {
         std::vector<std::string> filename;
-        
+
         feelCmdBuffer();
 
         cmdBuf.fileWrite();
-        
+
         filename = cmdBuf.getFileNamesInDirectory();
-        
+
         sort(filename.begin(), filename.end());
 
         return filename;
@@ -143,4 +143,30 @@ TEST_F(CmdBufferFixture, CheckEraseAlgorithmRemove) {
     EXPECT_EQ('E', ret.op);
     EXPECT_EQ(1, ret.firstData);
     EXPECT_EQ(5, ret.secondData);
+}
+
+TEST_F(CmdBufferFixture, CheckMergeEraseAlgorithm) {
+    createTestFile("1_E_1_2.txt");          // E 1~2 → 길이 2
+    createTestFile("2_E_2_3.txt");          // E 2~4 → 길이 3
+    createTestFile("3_W_10_12345678.txt");  // W 10 = 0x12345678
+    createTestFile("4_E_15_1.txt");         // E 15 → 길이 1
+    createTestFile("5_E_16_2.txt");         // E 16~17 → 길이 2
+
+    //creator test purpose 
+    cmdBuf.initializeCommandBuffer();
+    cmdBuf.mergeAlgorithm();
+    BufferCommand ret = cmdBuf.getBufferIndex(0);
+    EXPECT_EQ('E', ret.op);
+    EXPECT_EQ(1, ret.firstData);
+    EXPECT_EQ(4, ret.secondData);
+
+    ret = cmdBuf.getBufferIndex(1);
+    EXPECT_EQ('W', ret.op);
+    EXPECT_EQ(10, ret.firstData);
+    EXPECT_EQ(0x12345678, ret.secondData);
+
+    ret = cmdBuf.getBufferIndex(2);
+    EXPECT_EQ('E', ret.op);
+    EXPECT_EQ(15, ret.firstData);
+    EXPECT_EQ(3, ret.secondData);
 }

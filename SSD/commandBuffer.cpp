@@ -59,6 +59,14 @@ BufferCommand CommandBuffer::getBufferIndex(int i) {
 	return CommandBuffer::buffer[i];
 }
 
+void CommandBuffer::copyBuffer(std::vector<BufferCommand> buf) {
+	this->clearVec();
+
+	for (int idx = 0; idx < buf.size(); idx++) {
+		this->buffer.push_back(buf[idx]);
+	}
+}
+
 void CommandBuffer::makeEmptyFiles(std::string& baseDir)
 {
 	for (int i = 1; i <= 5; ++i) {
@@ -291,8 +299,68 @@ void CommandBuffer::eraseAlgorithm() {
 	buffer = std::move(result);
 }
 
-void CommandBuffer::mergeAlgorithm() {
+void CommandBuffer::mergeAlgorithm()
+{
+	std::vector<BufferCommand> originalBuffer = this->buffer;
+	std::vector<BufferCommand> OptimizedCMDBuffer;
+	std::vector<std::pair<int, int>> ranges;
+	std::vector<size_t> eraseIndices;
 
+	for (size_t i = 0; i < originalBuffer.size(); ++i) {
+		const auto& cmd = originalBuffer[i];
+		if (cmd.op == 'E') {
+			int start = cmd.firstData;
+			int end = start + cmd.secondData - 1;
+			ranges.emplace_back(start, end);
+			eraseIndices.push_back(i);
+		}
+	}
+
+	std::vector<bool> used(ranges.size(), false);
+	std::vector<std::pair<int, int>> mergedRanges;
+	std::vector<size_t> mergedPositions;
+
+	for (size_t i = 0; i < ranges.size(); ++i) {
+		if (used[i]) continue;
+		int start = ranges[i].first;
+		int end = ranges[i].second;
+		size_t firstPos = eraseIndices[i];
+		used[i] = true;
+
+		for (size_t j = i + 1; j < ranges.size(); ++j) {
+			if (used[j]) continue;
+			unsigned int s = ranges[j].first;
+			unsigned int e = ranges[j].second;
+			if (s <= end + 1) {
+				int tempStart = std::min<unsigned int>(start, s);
+				int tempEnd = std::max<unsigned int>(end, e);
+				if (tempEnd - tempStart + 1 > 10) {
+					continue;
+				}
+				start = tempStart;
+				end = tempEnd;
+				firstPos = std::min<unsigned int>(firstPos, eraseIndices[j]);
+				used[j] = true;
+			}
+		}
+		mergedRanges.emplace_back(start, end);
+		mergedPositions.push_back(firstPos);
+	}
+
+	std::set<size_t> erasedSet(eraseIndices.begin(), eraseIndices.end());
+	size_t mergedIdx = 0;
+	for (size_t i = 0; i < originalBuffer.size(); ++i) {
+		if (erasedSet.count(i)) {
+			if (std::find(mergedPositions.begin(), mergedPositions.end(), i) != mergedPositions.end()) {
+				const auto& range = mergedRanges[mergedIdx++];
+				OptimizedCMDBuffer.push_back(BufferCommand{ 'E', static_cast<unsigned int>(range.first), static_cast<unsigned int>(range.second - range.first + 1) });
+			}
+			continue;
+		}
+		OptimizedCMDBuffer.push_back(originalBuffer[i]);
+	}
+
+	this->copyBuffer(OptimizedCMDBuffer);
 }
 
 void CommandBuffer::optimizeCMD() {
@@ -324,4 +392,3 @@ std::vector<std::string> CommandBuffer::getFileNamesInDirectory() {
 	FindClose(hFind);
 	return fileNames;
 }
-
