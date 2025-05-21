@@ -81,15 +81,22 @@ class CommandChecker {
 public:
 	bool execute(int argc, char* argv[]);
 
+	bool executeFlush();
+
+	bool executeErase(char* argv[]);
+
+	bool executeRead(char* argv[]);
+
+	bool executeWrite(char* argv[]);
+
+	bool isValidArgc(std::string op, unsigned int argc);
+	bool isValidRange(std::string lba);
+	bool isValidRange(std::string lba, std::string size);
 	bool isValidRange(char* argv[]);
 	bool isValidOperator(std::string op);
 	bool isValidAddress(std::string addr);
 
 private:
-	bool executeRead(std::string lba);
-	bool executeWrite(std::string lba, std::string addr);
-	bool executeErase(std::string lba, std::string size);
-	bool executeFlush();
 
 	const std::string output_filename = "ssd_output.txt";
 
