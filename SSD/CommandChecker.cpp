@@ -48,7 +48,14 @@ bool CommandChecker::isValidArgc(std::string op, unsigned int argc)
 
 bool CommandChecker::isValidRange(std::string lba)
 {
-	int lba_value = stoi(lba);
+	int lba_value = 0;
+	try {
+		lba_value = stoi(lba);
+	}
+	catch (std::exception e) {
+		return false;
+	}
+
 	if (lba_value < 0 || lba_value > 99) {
 		writeOutputFile();
 		return false;
@@ -62,8 +69,21 @@ bool CommandChecker::isValidRange(std::string lba, std::string size)
 		return false;
 	}
 
-	int start_lba = std::stoi(lba);
-	int size_lba = std::stoi(size);
+	int start_lba = 0;
+	try {
+		start_lba = std::stoi(lba);
+	}
+	catch (std::exception e) {
+		return false;
+	}
+
+	int size_lba = 0;
+	try {
+		size_lba = std::stoi(size);
+	}
+	catch (std::exception e) {
+		return false;
+	}
 	size_lba = (size_lba > 10) ? 10 : size_lba;
 	int end_lba = start_lba + size_lba - 1;
 
@@ -137,8 +157,21 @@ bool CommandChecker::executeErase(char* argv[])
 		return false;
 	}
 
-	int start_lba = std::stoi(lba);
-	int size_lba = std::stoi(size);
+	int start_lba = 0;
+	try {
+		start_lba = std::stoi(lba);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
+
+	int size_lba = 0;
+	try {
+		size_lba = std::stoi(size);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
 	size_lba = (size_lba <= 10) ? size_lba : 10;
 	int end_lba = start_lba + size_lba - 1;
 
@@ -155,8 +188,14 @@ bool CommandChecker::executeRead(char* argv[])
 		return false;
 	}
 
-	unsigned int lba_val = (unsigned int)std::stoi(lba);
-	std::cout << lba << " " << lba_val << std::endl;
+	unsigned int lba_val = 0;
+	try {
+		lba_val = (unsigned int)std::stoi(lba);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
+
 	ReadCommand cmd{ lba_val };
 	cmd.execute();
 
@@ -175,8 +214,21 @@ bool CommandChecker::executeWrite(char* argv[])
 		return false;
 	}
 
-	unsigned int lba_val = (unsigned int)std::stoi(lba);
-	unsigned int addr_val = (unsigned int)std::stoll(addr.substr(2), nullptr, 16);
+	unsigned int lba_val = 0;
+	try {
+		lba_val = (unsigned int)std::stoi(lba);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
+
+	unsigned int addr_val = 0;
+	try {
+		addr_val = (unsigned int)std::stoll(addr.substr(2), nullptr, 16);
+	}
+	catch (std::invalid_argument e) {
+		return false;
+	}
 
 	WriteCommand cmd{ lba_val, addr_val };
 	cmd.execute();
@@ -201,7 +253,7 @@ void WriteCommand::execute()
 void EraseCommand::execute()
 {
 	CommandBuffer buffer;
-	BufferCommand cmd{ 'E', __lba, __size };
+	BufferCommand cmd{ 'E', __lba, __size};
 	buffer.enqueue(cmd);
 }
 
