@@ -161,7 +161,7 @@ bool CommandChecker::executeErase(char* argv[])
 	try {
 		start_lba = std::stoi(lba);
 	}
-	catch (std::exception e) {
+	catch (std::invalid_argument e) {
 		return false;
 	}
 
@@ -169,7 +169,7 @@ bool CommandChecker::executeErase(char* argv[])
 	try {
 		size_lba = std::stoi(size);
 	}
-	catch (std::exception e) {
+	catch (std::invalid_argument e) {
 		return false;
 	}
 	size_lba = (size_lba <= 10) ? size_lba : 10;
@@ -192,7 +192,7 @@ bool CommandChecker::executeRead(char* argv[])
 	try {
 		lba_val = (unsigned int)std::stoi(lba);
 	}
-	catch (std::exception e) {
+	catch (std::invalid_argument e) {
 		return false;
 	}
 
@@ -218,7 +218,7 @@ bool CommandChecker::executeWrite(char* argv[])
 	try {
 		lba_val = (unsigned int)std::stoi(lba);
 	}
-	catch (std::exception e) {
+	catch (std::invalid_argument e) {
 		return false;
 	}
 
@@ -226,7 +226,7 @@ bool CommandChecker::executeWrite(char* argv[])
 	try {
 		addr_val = (unsigned int)std::stoll(addr.substr(2), nullptr, 16);
 	}
-	catch (std::exception e) {
+	catch (std::invalid_argument e) {
 		return false;
 	}
 
