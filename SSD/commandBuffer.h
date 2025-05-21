@@ -9,7 +9,6 @@
 #include <exception>
 #include "SSD_func.h"
 #include <set>
-#include <algorithm>
 
 enum {
     CMD_WRITE = 'W',
@@ -27,7 +26,8 @@ struct BufferCommand {
 class CommandBufferException : public std::exception {
 public:
     explicit CommandBufferException(const std::string& message)
-        : msg_(message) {}
+        : msg_(message) {
+    }
 
     virtual const char* what() const noexcept override {
         return msg_.c_str();
@@ -63,6 +63,7 @@ public:
     void pushCMD(const BufferCommand cmd);
     void clearVec();
     void clearDir();
+    int getBufSize();
     void copyBuffer(std::vector<BufferCommand> buf);
     void fileWrite();
     void eraseAlgorithm();

@@ -87,7 +87,8 @@ bool CommandBuffer::fillCommandBufferWithFileNames()
 	for (const auto& fileName : bufferFileLists) {
 		if (bufferFileExists(fileName)) {
 			BufferCommand cmd = getCommandFromFile(fileName);
-			if(cmd.op=='W'|| cmd.op=='E')
+
+			if (cmd.op == 'W' || cmd.op == 'E')
 				buffer.push_back(cmd);
 			fileChecker = true;
 		}
@@ -230,6 +231,10 @@ void CommandBuffer::createEmptyFilesForRemaining(std::string& baseDir)
 	}
 }
 
+int CommandBuffer::getBufSize() {
+	return this->buffer.size();
+}
+
 void CommandBuffer::fileWrite() {
 	std::string baseDir = "buffer";
 	std::string filePath;
@@ -237,7 +242,7 @@ void CommandBuffer::fileWrite() {
 	clearDir();
 
 	for (int idx = 1; idx <= this->buffer.size(); idx++) {
-		const BufferCommand cmd = this -> buffer[idx - 1];
+		const BufferCommand cmd = this->buffer[idx - 1];
 
 		filePath = baseDir + "\\" + std::to_string(idx) + "_";
 		filePath += std::string(1, cmd.op) + "_" + std::to_string(cmd.firstData) + "_";
@@ -302,66 +307,50 @@ void CommandBuffer::eraseAlgorithm() {
 
 void CommandBuffer::mergeAlgorithm()
 {
-	std::vector<BufferCommand> originalBuffer = this->buffer;
-	std::vector<BufferCommand> OptimizedCMDBuffer;
-	std::vector<std::pair<int, int>> ranges;
-	std::vector<size_t> eraseIndices;
+	std::vector<BufferCommand> result;
+	std::vector<BufferCommand> originVec = this->buffer;
+	size_t i = 0;
 
-	for (size_t i = 0; i < originalBuffer.size(); ++i) {
-		const auto& cmd = originalBuffer[i];
-		if (cmd.op == 'E') {
-			int start = cmd.firstData;
-			int end = start + cmd.secondData - 1;
-			ranges.emplace_back(start, end);
-			eraseIndices.push_back(i);
-		}
-	}
-
-	std::vector<bool> used(ranges.size(), false);
-	std::vector<std::pair<int, int>> mergedRanges;
-	std::vector<size_t> mergedPositions;
-
-	for (size_t i = 0; i < ranges.size(); ++i) {
-		if (used[i]) continue;
-		int start = ranges[i].first;
-		int end = ranges[i].second;
-		size_t firstPos = eraseIndices[i];
-		used[i] = true;
-
-		for (size_t j = i + 1; j < ranges.size(); ++j) {
-			if (used[j]) continue;
-			unsigned int s = ranges[j].first;
-			unsigned int e = ranges[j].second;
-			if (s <= end + 1) {
-				int tempStart = std::min<unsigned int>(start, s);
-				int tempEnd = std::max<unsigned int>(end, e);
-				if (tempEnd - tempStart + 1 > 10) {
-					continue;
-				}
-				start = tempStart;
-				end = tempEnd;
-				firstPos = std::min<unsigned int>(firstPos, eraseIndices[j]);
-				used[j] = true;
-			}
-		}
-		mergedRanges.emplace_back(start, end);
-		mergedPositions.push_back(firstPos);
-	}
-
-	std::set<size_t> erasedSet(eraseIndices.begin(), eraseIndices.end());
-	size_t mergedIdx = 0;
-	for (size_t i = 0; i < originalBuffer.size(); ++i) {
-		if (erasedSet.count(i)) {
-			if (std::find(mergedPositions.begin(), mergedPositions.end(), i) != mergedPositions.end()) {
-				const auto& range = mergedRanges[mergedIdx++];
-				OptimizedCMDBuffer.push_back(BufferCommand{ 'E', static_cast<unsigned int>(range.first), static_cast<unsigned int>(range.second - range.first + 1) });
-			}
+	while (i < originVec.size()) {
+		if (originVec[i].op != 'E') {
+			result.push_back(originVec[i]);
+			++i;
 			continue;
 		}
-		OptimizedCMDBuffer.push_back(originalBuffer[i]);
+
+		unsigned int start = originVec[i].firstData;
+		unsigned int end = originVec[i].firstData + originVec[i].secondData - 1;
+		size_t j = i + 1;
+
+		while (j < originVec.size() && originVec[j].op == 'E') {
+			unsigned int nextStart = originVec[j].firstData;
+			unsigned int nextEnd = originVec[j].firstData + originVec[j].secondData - 1;
+
+			if ((nextStart <= end + 1 && nextStart >= start) || (nextEnd >= start - 1 && nextEnd <= end)) {
+				unsigned int newStart = std::min<uint>(start, nextStart);
+				unsigned int newEnd = std::max<uint>(end, nextEnd);
+				unsigned int newSize = newEnd - newStart + 1;
+
+				if (newSize <= 10) {
+					start = newStart;
+					end = newEnd;
+					++j;
+					continue;
+				}
+				else {
+					break;
+				}
+			}
+			else {
+				break;
+			}
+		}
+
+		result.push_back({ 'E', start, end - start + 1 });
+		i = j;
 	}
 
-	this->copyBuffer(OptimizedCMDBuffer);
+	this->copyBuffer(result);
 }
 
 void CommandBuffer::optimizeCMD() {
