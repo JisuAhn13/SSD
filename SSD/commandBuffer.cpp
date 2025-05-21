@@ -130,7 +130,7 @@ bool CommandBuffer::fastRead(unsigned int lba, unsigned int& value)
 			}
 		}
 	}
-	return true;
+	return false;
 }
 
 // Call from CommandChecker
@@ -176,6 +176,7 @@ void CommandBuffer::flush() {
 			std::exception();
 		}
 	}
+	buffer.clear();
 }
 
 void CommandBuffer::pushCMD(const BufferCommand cmd) {

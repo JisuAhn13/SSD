@@ -215,3 +215,20 @@ TEST_F(CmdBufferFixture, CheckMergeEraseAlgorithm) {
     EXPECT_EQ(15, ret.firstData);
     EXPECT_EQ(3, ret.secondData);
 }
+
+TEST_F(CmdBufferFixture, FlushIfBufferFull) {
+    BufferCommand command[] = {
+        {'W', 1, 0x11111111},
+        {'W', 2, 0x22222222},
+        {'W', 3, 0x33333333},
+        {'W', 4, 0x44444444},
+        {'W', 5, 0x55555555},
+        {'W', 6, 0x66666666},
+    };
+
+    for (auto each : command) {
+        cmdBuf.enqueue(each);
+    }
+
+    EXPECT_FALSE(cmdBuf.isFull());
+}
