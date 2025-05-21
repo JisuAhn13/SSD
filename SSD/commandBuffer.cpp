@@ -11,6 +11,10 @@ bool CommandBuffer::fileExists(const std::string& path) {
 	return (attr != INVALID_FILE_ATTRIBUTES && !(attr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
+bool CommandBuffer::bufferFileExists(const std::string& fileName) {
+	std::regex pattern(R"([1-5]_.*\.txt)");
+	return std::regex_match(fileName, pattern);
+}
 
 std::string CommandBuffer::removeTxt(std::string& filename)
 {
@@ -29,34 +33,26 @@ BufferCommand  CommandBuffer::getCommandFromFile(std::string fileName) {
 	int tokenIndex = 0;
 	while (std::getline(ss, token, '_')) {
 		token = removeTxt(token);
-
 		if (token == "empty") {
-			// 예외 처리: 비어 있는 명령
 			return ret;
 		}
 
 		switch (tokenIndex) {
-		case 1: // W 또는 E
+		case 1:
 			if (token == "W" || token == "E") {
 				ret.op = token[0];
 			}
 			break;
-		case 2: // firstData
+		case 2:
 			ret.firstData = static_cast<uint32_t>(std::stoul(token));
 			break;
-		case 3: // secondData (16진수)
+		case 3:
 			ret.secondData = static_cast<uint32_t>(std::stoul(token, nullptr, 16));
 			break;
 		}
 		tokenIndex++;
 	}
-
 	return ret;
-}
-
-bool bufferFileExists(const std::string& fileName) {
-	std::regex pattern(R"([1-5]_.*\.txt)");
-	return std::regex_match(fileName, pattern);
 }
 
 BufferCommand CommandBuffer::getBufferIndex(int i) {
@@ -102,14 +98,10 @@ bool CommandBuffer::createDirectory(std::string& baseDir)
 	return false;
 }
 
-CommandBuffer::CommandBuffer() {
+void CommandBuffer::initializeCommandBuffer() {
 	std::string baseDir = "buffer";
-
 	if (createDirectory(baseDir)) return;
-
 	if (fillCommandBufferWithFileNames()) return;
-
-	// make 1_empty.txt ~ 5_empty.txt files
 	makeEmptyFiles(baseDir);
 }
 
@@ -138,10 +130,12 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 {
 	// 0. Import buffer files (if not exist, create files)
+	initializeCommandBuffer();
 
 	// 1-1. If buffer is full(size:5), execute all commands
-	if (isFull()) {
+	if (cmd.op == 'F' || isFull()) {
 		flush();
+		if (cmd.op == 'F') return 0;
 	}
 
 	// 1-2. Enqueue command to buffer
@@ -161,8 +155,10 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 	}
 
 	// 2. Optimize
+	optimizeCMD();
 
 	// 3. Export buffer files
+	fileWrite();
 
 	return value;
 }
@@ -187,6 +183,32 @@ void CommandBuffer::pushCMD(const BufferCommand cmd) {
 
 void CommandBuffer::clearVec() {
 	this->buffer.clear();
+}
+
+void CommandBuffer::clearDir() {
+	std::string searchPath = "buffer\\*";
+
+	WIN32_FIND_DATAA findData;
+	HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
+
+	if (hFind == INVALID_HANDLE_VALUE) {
+		return;
+	}
+
+	do {
+		std::string fileName = findData.cFileName;
+
+		if (fileName == "." || fileName == "..") continue;
+
+		std::string fullPath = "buffer\\" + fileName;
+
+		if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+			DeleteFileA(fullPath.c_str());
+		}
+
+	} while (FindNextFileA(hFind, &findData) != 0);
+
+	FindClose(hFind);
 }
 
 void CommandBuffer::fileWrite() {
@@ -233,32 +255,6 @@ void CommandBuffer::fileWrite() {
 			}
 		}
 	}
-}
-
-void CommandBuffer::clearDir() {
-	std::string searchPath = "buffer\\*";
-
-	WIN32_FIND_DATAA findData;
-	HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
-
-	if (hFind == INVALID_HANDLE_VALUE) {
-		return;
-	}
-
-	do {
-		std::string fileName = findData.cFileName;
-
-		if (fileName == "." || fileName == "..") continue;
-
-		std::string fullPath = "buffer\\" + fileName;
-
-		if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-			DeleteFileA(fullPath.c_str());
-		}
-
-	} while (FindNextFileA(hFind, &findData) != 0);
-
-	FindClose(hFind);
 }
 
 void CommandBuffer::eraseAlgorithm() {

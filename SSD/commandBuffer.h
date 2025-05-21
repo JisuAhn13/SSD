@@ -11,6 +11,7 @@ enum {
     CMD_WRITE = 'W',
     CMD_READ = 'R',
     CMD_ERASE = 'E',
+    CMD_FLUSH = 'F',
 };
 
 struct BufferCommand {
@@ -24,39 +25,43 @@ public:
     enum {
         MAX_BUFFER_SIZE = 5,
     };
-    CommandBuffer();
 
-    void makeEmptyFiles(std::string& baseDir);
+    // singleton structure
+    static CommandBuffer& getInstance() {
+        static CommandBuffer instance;
+        return instance;
+    }
+
+    BufferCommand getBufferIndex(int i);
 
     bool fillCommandBufferWithFileNames(void);
-
     bool createDirectory(std::string& baseDir);
+    void initializeCommandBuffer();
+
+    unsigned int enqueue(BufferCommand cmd);
+    void flush();
+    void pushCMD(const BufferCommand cmd);
+    void clearVec();
+    void clearDir();
+    void fileWrite();
+    void eraseAlgorithm();
+    void mergeAlgorithm();
+    std::vector<std::string> getFileNamesInDirectory();
 
     inline bool isFull() const {
         return (buffer.size() >= CommandBuffer::MAX_BUFFER_SIZE);
     }
 
-    unsigned int enqueue(BufferCommand cmd);
-    void flush();
-    bool readinbuffer(unsigned int lba, unsigned int& value);
-
-    void pushCMD(const BufferCommand cmd);
-    void clearVec();
-    void fileWrite();
-    void clearDir();
-    void eraseAlgorithm();
-    void mergeAlgorithm();
-    void optimizeCMD();
-    std::string removeTxt(std::string& token);
-
-    BufferCommand getCommandFromFile(std::string fileName);
-    std::vector<std::string> getFileNamesInDirectory();
-
-    BufferCommand getBufferIndex(int i);
-
 private:
     bool directoryExists(const std::string& path);
     bool fileExists(const std::string& path);
+    bool bufferFileExists(const std::string& fileName);
+    std::string removeTxt(std::string& token);
+    BufferCommand getCommandFromFile(std::string fileName);
+    void makeEmptyFiles(std::string& baseDir);
+    bool readinbuffer(unsigned int lba, unsigned int& value);
+    void optimizeCMD();
+
     std::vector<BufferCommand> buffer;
     SSD ssd;
 };
