@@ -31,7 +31,7 @@ TEST_F(SSDEraseFunctionTest, EraseSuccess) {
 }
 
 TEST_F(SSDEraseFunctionTest, Only_Erase_LBA_Range) {
-    WriteNoneZeroValue(4, 12);
+    WriteNoneZeroValue(4, 13);
     
     EraseAndCheck(5, 10);
     EXPECT_EQ(ssd->read(4), 0x12345678);
