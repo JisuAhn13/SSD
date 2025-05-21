@@ -1,7 +1,6 @@
 ﻿#include "gmock/gmock.h"
 #include "commandBuffer.h"
-#include <windows.h>
-#include <algorithm>
+
 using namespace testing;
 
 class CmdBufferFixture : public ::testing::Test {

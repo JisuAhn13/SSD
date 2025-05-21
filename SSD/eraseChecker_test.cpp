@@ -11,7 +11,7 @@ protected:
     }
 
     void WriteNoneZeroValue(uint start_lba, uint size) {
-        for (int idx = 0; idx < size; idx++) {
+        for (uint idx = 0; idx < size; idx++) {
             ssd->write(start_lba+idx, 0x12345678);
         }
     }
@@ -20,7 +20,7 @@ protected:
         WriteNoneZeroValue(start_lba, size);
 
         ssd->erase(start_lba, size);
-        for (int idx = 0; idx < size; idx++) {
+        for (uint idx = 0; idx < size; idx++) {
             EXPECT_EQ(ssd->read(start_lba+idx), 0x00000000);
         }
     }

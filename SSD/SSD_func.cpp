@@ -113,7 +113,7 @@ void SSD::write(unsigned int LBA, unsigned int Val) {
 }
 
 void SSD::erase(uint StartLBA, uint Size) {
-    for (int idx = 0; idx < Size; idx++) {
+    for (uint idx = 0; idx < Size; idx++) {
         this->write(StartLBA+idx, 0x00000000);
     }
 }

@@ -67,20 +67,6 @@ void CommandBuffer::copyBuffer(std::vector<BufferCommand> buf) {
 	}
 }
 
-void CommandBuffer::makeEmptyFiles(std::string& baseDir)
-{
-	for (int i = 1; i <= 5; ++i) {
-		std::string filePath = baseDir + "\\" + std::to_string(i) + "_empty.txt";
-
-		if (!fileExists(filePath)) {
-			std::ofstream outFile(filePath);
-			if (outFile) {
-				outFile.close();
-			}
-		}
-	}
-}
-
 bool CommandBuffer::fillCommandBufferWithFileNames()
 {
 	std::vector<std::string> bufferFileLists = getFileNamesInDirectory();
@@ -100,7 +86,7 @@ bool CommandBuffer::createDirectory(std::string& baseDir)
 {
 	if (!directoryExists(baseDir)) {
 		if (!CreateDirectoryA(baseDir.c_str(), NULL)) {
-			return true;
+			throw CommandBufferException("Failed to create directory: " + baseDir);
 		}
 	}
 	return false;
@@ -110,7 +96,7 @@ void CommandBuffer::initializeCommandBuffer() {
 	std::string baseDir = "buffer";
 	if (createDirectory(baseDir)) return;
 	if (fillCommandBufferWithFileNames()) return;
-	makeEmptyFiles(baseDir);
+	createEmptyFilesForRemaining(baseDir);
 }
 
 bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
@@ -139,13 +125,11 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 {
 	// 0. Import buffer files (if not exist, create files)
 	initializeCommandBuffer();
-
 	// 1-1. If buffer is full(size:5), execute all commands
 	if (cmd.op == 'F' || isFull()) {
 		flush();
 		if (cmd.op == 'F') return 0;
 	}
-
 	// 1-2. Enqueue command to buffer
 	unsigned int value = 0;
 	if (cmd.op == 'W' || cmd.op == 'E') {
@@ -161,13 +145,10 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 	else {
 		// Invalid Operator
 	}
-
 	// 2. Optimize
 	optimizeCMD();
-
 	// 3. Export buffer files
 	fileWrite();
-
 	return value;
 }
 
@@ -219,6 +200,23 @@ void CommandBuffer::clearDir() {
 	FindClose(hFind);
 }
 
+void CommandBuffer::createEmptyFilesForRemaining(std::string& baseDir)
+{
+	for (int idx = (int)this->buffer.size() + 1; idx <= 5; idx++) {
+		std::string filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
+
+		if (!fileExists(filePath)) {
+			std::ofstream outFile(filePath);
+			if (outFile) {
+				outFile.close();
+			}
+			else {
+				throw CommandBufferException("Failed to create file: " + filePath);
+			}
+		}
+	}
+}
+
 void CommandBuffer::fileWrite() {
 	std::string baseDir = "buffer";
 	std::string filePath;
@@ -247,22 +245,13 @@ void CommandBuffer::fileWrite() {
 			if (outFile) {
 				outFile.close();
 			}
-		}
-	}
-
-	for (int idx = (int)this->buffer.size() + 1; idx <= 5; idx++) {
-		filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
-
-		if (!fileExists(filePath)) {
-			std::ofstream outFile(filePath);
-			if (outFile) {
-				outFile.close();
-			}
 			else {
-				std::exception();
+				throw CommandBufferException("Failed to create empty file: " + filePath);
 			}
 		}
 	}
+
+	createEmptyFilesForRemaining(baseDir);
 }
 
 void CommandBuffer::eraseAlgorithm() {
