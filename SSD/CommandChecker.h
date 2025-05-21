@@ -12,7 +12,7 @@ public:
 
 class ReadCommand : public Command {
 public:
-	explicit ReadCommand(unsigned int lba = 0)
+	explicit ReadCommand(unsigned int lba = 0) : __lba(lba)
 	{
 	}
 	void execute() override;
