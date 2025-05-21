@@ -1,5 +1,4 @@
 #include "CommandChecker.h"
-#include "SSD_func.h"
 #include <fstream>
 #include <regex>
 
@@ -142,7 +141,7 @@ bool CommandChecker::executeErase(char* argv[])
 	int size_lba = std::stoi(size);
 	int end_lba = start_lba + size_lba - 1;
 
-	EraseCommand cmd{ (unsigned int)start_lba, (unsigned int)end_lba };
+	EraseCommand cmd{ (unsigned int)start_lba, (unsigned int)size_lba };
 	cmd.execute();
 
 	return true;
@@ -187,7 +186,7 @@ void ReadCommand::execute()
 {
 	CommandBuffer buffer;
 	BufferCommand cmd{ 'R', __lba, 0 };
-	buffer.enqueue(cmd);
+	buffer.enqueue(cmd);;
 }
 
 void WriteCommand::execute()
@@ -207,6 +206,6 @@ void EraseCommand::execute()
 void FlushCommand::execute()
 {
 	CommandBuffer buffer;
-	BufferCommand cmd{ 'F', __lba, 0 };
+	BufferCommand cmd{ 'F', 0, 0 };
 	buffer.enqueue(cmd);
 }
