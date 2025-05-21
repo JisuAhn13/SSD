@@ -11,6 +11,7 @@ enum {
     CMD_WRITE = 'W',
     CMD_READ = 'R',
     CMD_ERASE = 'E',
+    CMD_FLUSH = 'F',
 };
 
 struct BufferCommand {

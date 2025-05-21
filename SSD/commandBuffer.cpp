@@ -138,6 +138,11 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 {
 	// 0. Import buffer files (if not exist, create files)
+	if (cmd.op == 'F')
+	{
+		flush();
+		return 0;
+	}
 
 	// 1-1. If buffer is full(size:5), execute all commands
 	if (isFull()) {
@@ -161,8 +166,10 @@ unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 	}
 
 	// 2. Optimize
+	optimizeCMD();
 
 	// 3. Export buffer files
+	fileWrite();
 
 	return value;
 }
