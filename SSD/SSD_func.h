@@ -15,7 +15,7 @@ public:
     std::string getOuputFileName();
     void write(uint LBA, uint Val);
     uint read(uint LBA);
-    void erase(uint StartLBA, uint EndLBA);
+    void erase(uint StartLBA, uint Size);
     uint readDataFromLBA(std::ifstream& inFile, const uint& LBA);
     void recordFile(uint LBA, uint data);
 

@@ -165,7 +165,7 @@ void WriteCommand::execute()
 void EraseCommand::execute()
 {
 	CommandBuffer buffer;
-	BufferCommand cmd{ 'E', __lba, __lba + __size - 1 };
+	BufferCommand cmd{ 'E', __lba, __size};
 	buffer.enqueue(cmd);
 }
 
