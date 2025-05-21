@@ -71,6 +71,19 @@ TEST_F(CmdBufferFixture, FilesCreatedCorrectly) {
     }
 }
 
+TEST_F(CmdBufferFixture, full2) {
+    std::vector<BufferCommand> write_commands = { {CMD_WRITE, 1, 0x11111111} , {CMD_WRITE, 2, 0x22222222} };
+
+    for (auto c : write_commands) {
+        cmdBuf.enqueue(c);
+    }
+
+    BufferCommand ret = cmdBuf.getBufferIndex(0);
+    EXPECT_EQ('W', ret.op);
+    EXPECT_EQ(1, ret.firstData);
+    EXPECT_EQ(0x11111111, ret.secondData);
+}
+
 TEST_F(CmdBufferFixture, BufferInitialReadOperation) {
 
     createTestFile("1_W_99_ABCDEF12.txt");
