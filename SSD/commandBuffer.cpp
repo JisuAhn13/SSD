@@ -137,32 +137,38 @@ bool CommandBuffer::fastRead(unsigned int lba, unsigned int& value)
 // Call from CommandChecker
 unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 {
-	// 1-1. If buffer is full(size:5), execute all commands
-	if (cmd.op == 'F' || isFull()) {
-		flush();
-		if (cmd.op == 'F') return 0;
-	}
-	// 1-2. Enqueue command to buffer
-	unsigned int value = 0;
-	if (cmd.op == 'W' || cmd.op == 'E') {
-		buffer.push_back(cmd);
-	}
-	else if (cmd.op == 'R') {
-		bool ret = fastRead(cmd.firstData, value);
-		if (ret == false) {
-			// if data can be decided without reading ssd_nand.txt, then ssd read
-			value = ssd.read(cmd.firstData);
+	try {
+		// 1-1. If buffer is full(size:5), execute all commands
+		if (cmd.op == 'F' || isFull()) {
+			flush();
+			if (cmd.op == 'F') return 0;
+		}
+		// 1-2. Enqueue command to buffer
+		unsigned int value = 0;
+		if (cmd.op == 'W' || cmd.op == 'E') {
+			buffer.push_back(cmd);
+		}
+		else if (cmd.op == 'R') {
+			bool ret = fastRead(cmd.firstData, value);
+			if (ret == false) {
+				// if data can be decided without reading ssd_nand.txt, then ssd read
+				value = ssd.read(cmd.firstData);
+			}
+			else {
+				ssd.recordFile(cmd.firstData, value);
+			}
 		}
 		else {
-			ssd.recordFile(cmd.firstData, value);
+			// Invalid Operator
 		}
+		// 2. Optimize
+		optimizeCMD();
+		return value;
 	}
-	else {
-		// Invalid Operator
+	catch (const CommandBufferException& ex) {
+		std::cerr << "CommandBuffer error: " << ex.what() << std::endl;
 	}
-	// 2. Optimize
-	optimizeCMD();
-	return value;
+	return 0;
 }
 
 void CommandBuffer::flush() {
@@ -174,7 +180,7 @@ void CommandBuffer::flush() {
 			ssd.erase(cmd.firstData, cmd.secondData);
 		}
 		else {
-			std::exception();
+			throw CommandBufferException("Invalid Command :" + cmd.op);
 		}
 	}
 	buffer.clear();
@@ -231,7 +237,7 @@ void CommandBuffer::createEmptyFilesForRemaining(std::string& baseDir)
 	}
 }
 
-int CommandBuffer::getBufSize() {
+size_t CommandBuffer::getBufSize() {
 	return this->buffer.size();
 }
 

@@ -6,9 +6,21 @@
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
-#include <exception>
-#include "SSD_func.h"
 #include <set>
+#include "SSD_func.h"
+
+class CommandBufferException : public std::exception {
+public:
+    explicit CommandBufferException(const std::string& message)
+        : msg_(message) {
+    }
+
+    virtual const char* what() const noexcept override {
+        return msg_.c_str();
+    }
+private:
+    std::string msg_;
+};
 
 enum {
     CMD_WRITE = 'W',
@@ -21,20 +33,6 @@ struct BufferCommand {
     char op;
     uint firstData;
     uint secondData;
-};
-
-class CommandBufferException : public std::exception {
-public:
-    explicit CommandBufferException(const std::string& message)
-        : msg_(message) {
-    }
-
-    virtual const char* what() const noexcept override {
-        return msg_.c_str();
-    }
-
-private:
-    std::string msg_;
 };
 
 class CommandBuffer {
@@ -63,7 +61,7 @@ public:
     void pushCMD(const BufferCommand cmd);
     void clearVec();
     void clearDir();
-    int getBufSize();
+    size_t getBufSize();
     void copyBuffer(std::vector<BufferCommand> buf);
     void fileWrite();
     void eraseAlgorithm();

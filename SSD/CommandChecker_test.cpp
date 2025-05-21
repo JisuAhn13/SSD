@@ -13,7 +13,7 @@ public:
 		for (auto& it : args) {
 			argv.push_back(const_cast<char*>(it.c_str()));
 		}
-		return checker.execute(argv.size(), argv.data());
+		return checker.execute((int)argv.size(), argv.data());
 	}
 
 	std::string op_invalid = "A";
