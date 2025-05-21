@@ -1,6 +1,18 @@
 #include "commandBuffer.h"
 #include "SSD_func.h"
 
+CommandBuffer::CommandBuffer()
+{
+	// 0. Import buffer files (if not exist, create files)
+	initializeCommandBuffer();
+}
+
+CommandBuffer::~CommandBuffer()
+{
+	// 3. Export buffer files
+	fileWrite();
+}
+
 bool CommandBuffer::directoryExists(const std::string& path) {
 	DWORD ftyp = GetFileAttributesA(path.c_str());
 	return (ftyp != INVALID_FILE_ATTRIBUTES && (ftyp & FILE_ATTRIBUTE_DIRECTORY));
@@ -67,20 +79,6 @@ void CommandBuffer::copyBuffer(std::vector<BufferCommand> buf) {
 	}
 }
 
-void CommandBuffer::makeEmptyFiles(std::string& baseDir)
-{
-	for (int i = 1; i <= 5; ++i) {
-		std::string filePath = baseDir + "\\" + std::to_string(i) + "_empty.txt";
-
-		if (!fileExists(filePath)) {
-			std::ofstream outFile(filePath);
-			if (outFile) {
-				outFile.close();
-			}
-		}
-	}
-}
-
 bool CommandBuffer::fillCommandBufferWithFileNames()
 {
 	std::vector<std::string> bufferFileLists = getFileNamesInDirectory();
@@ -89,7 +87,8 @@ bool CommandBuffer::fillCommandBufferWithFileNames()
 	for (const auto& fileName : bufferFileLists) {
 		if (bufferFileExists(fileName)) {
 			BufferCommand cmd = getCommandFromFile(fileName);
-			buffer.push_back(cmd);
+			if (cmd.op == 'W' || cmd.op == 'E')
+				buffer.push_back(cmd);
 			fileChecker = true;
 		}
 	}
@@ -100,7 +99,7 @@ bool CommandBuffer::createDirectory(std::string& baseDir)
 {
 	if (!directoryExists(baseDir)) {
 		if (!CreateDirectoryA(baseDir.c_str(), NULL)) {
-			return true;
+			throw CommandBufferException("Failed to create directory: " + baseDir);
 		}
 	}
 	return false;
@@ -110,10 +109,10 @@ void CommandBuffer::initializeCommandBuffer() {
 	std::string baseDir = "buffer";
 	if (createDirectory(baseDir)) return;
 	if (fillCommandBufferWithFileNames()) return;
-	makeEmptyFiles(baseDir);
+	createEmptyFilesForRemaining(baseDir);
 }
 
-bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
+bool CommandBuffer::fastRead(unsigned int lba, unsigned int& value)
 {
 	for (auto iter = buffer.rbegin(); iter != buffer.rend(); ++iter) {
 		BufferCommand cmd = *iter;
@@ -125,49 +124,43 @@ bool CommandBuffer::readinbuffer(unsigned int lba, unsigned int& value)
 		}
 
 		if (cmd.op == CMD_ERASE) {
-			if (cmd.firstData >= lba && cmd.secondData <= lba) {
+			if (cmd.firstData >= lba && (cmd.firstData + cmd.secondData - 1) <= lba) {
 				value = 0x0;
 				return true;
 			}
 		}
 	}
-	return true;
+	return false;
 }
 
 // Call from CommandChecker
 unsigned int CommandBuffer::enqueue(BufferCommand cmd)
 {
-	// 0. Import buffer files (if not exist, create files)
-	initializeCommandBuffer();
-
 	// 1-1. If buffer is full(size:5), execute all commands
 	if (cmd.op == 'F' || isFull()) {
 		flush();
 		if (cmd.op == 'F') return 0;
 	}
-
 	// 1-2. Enqueue command to buffer
 	unsigned int value = 0;
 	if (cmd.op == 'W' || cmd.op == 'E') {
 		buffer.push_back(cmd);
 	}
 	else if (cmd.op == 'R') {
-		bool ret = readinbuffer(cmd.firstData, value);
+		bool ret = fastRead(cmd.firstData, value);
 		if (ret == false) {
 			// if data can be decided without reading ssd_nand.txt, then ssd read
 			value = ssd.read(cmd.firstData);
+		}
+		else {
+			ssd.recordFile(cmd.firstData, value);
 		}
 	}
 	else {
 		// Invalid Operator
 	}
-
 	// 2. Optimize
 	optimizeCMD();
-
-	// 3. Export buffer files
-	fileWrite();
-
 	return value;
 }
 
@@ -183,6 +176,7 @@ void CommandBuffer::flush() {
 			std::exception();
 		}
 	}
+	buffer.clear();
 }
 
 void CommandBuffer::pushCMD(const BufferCommand cmd) {
@@ -219,6 +213,23 @@ void CommandBuffer::clearDir() {
 	FindClose(hFind);
 }
 
+void CommandBuffer::createEmptyFilesForRemaining(std::string& baseDir)
+{
+	for (int idx = (int)this->buffer.size() + 1; idx <= 5; idx++) {
+		std::string filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
+
+		if (!fileExists(filePath)) {
+			std::ofstream outFile(filePath);
+			if (outFile) {
+				outFile.close();
+			}
+			else {
+				throw CommandBufferException("Failed to create file: " + filePath);
+			}
+		}
+	}
+}
+
 int CommandBuffer::getBufSize() {
 	return this->buffer.size();
 }
@@ -230,7 +241,7 @@ void CommandBuffer::fileWrite() {
 	clearDir();
 
 	for (int idx = 1; idx <= this->buffer.size(); idx++) {
-		const BufferCommand cmd = this -> buffer[idx - 1];
+		const BufferCommand cmd = this->buffer[idx - 1];
 
 		filePath = baseDir + "\\" + std::to_string(idx) + "_";
 		filePath += std::string(1, cmd.op) + "_" + std::to_string(cmd.firstData) + "_";
@@ -252,14 +263,7 @@ void CommandBuffer::fileWrite() {
 			std::ofstream outFile(filePath);
 		}
 	}
-
-	for (int idx = (int)this->buffer.size() + 1; idx <= 5; idx++) {
-		filePath = baseDir + "\\" + std::to_string(idx) + "_empty.txt";
-
-		if (!fileExists(filePath)) {
-			std::ofstream outFile(filePath);
-		}
-	}
+	createEmptyFilesForRemaining(baseDir);
 }
 
 void CommandBuffer::eraseAlgorithm() {
@@ -321,7 +325,7 @@ void CommandBuffer::mergeAlgorithm()
 			unsigned int nextStart = originVec[j].firstData;
 			unsigned int nextEnd = originVec[j].firstData + originVec[j].secondData - 1;
 
-			if ((nextStart <= end + 1 && nextStart>= start) || (nextEnd>=start-1&&nextEnd<=end)) {
+			if ((nextStart <= end + 1 && nextStart >= start) || (nextEnd >= start - 1 && nextEnd <= end)) {
 				unsigned int newStart = std::min<uint>(start, nextStart);
 				unsigned int newEnd = std::max<uint>(end, nextEnd);
 				unsigned int newSize = newEnd - newStart + 1;
