@@ -10,30 +10,30 @@ protected:
         ssd = std::make_unique<SSD>();
     }
 
-    void WriteNoneZeroValue(uint start_lba, uint end_lba) {
-        for (int lba = start_lba; lba <= end_lba; lba++) {
-            ssd->write(lba, 0x12345678);
+    void WriteNoneZeroValue(uint start_lba, uint size) {
+        for (int idx = 0; idx < size; idx++) {
+            ssd->write(start_lba+idx, 0x12345678);
         }
     }
 
-    void EraseAndCheck(uint start_lba, uint end_lba) {
-        WriteNoneZeroValue(start_lba, end_lba);
+    void EraseAndCheck(uint start_lba, uint size) {
+        WriteNoneZeroValue(start_lba, size);
 
-        ssd->erase(start_lba, end_lba);
-        for (int lba = start_lba; lba <= end_lba; lba++) {
-            EXPECT_EQ(ssd->read(lba), 0x00000000);
+        ssd->erase(start_lba, size);
+        for (int idx = 0; idx < size; idx++) {
+            EXPECT_EQ(ssd->read(start_lba+idx), 0x00000000);
         }
     }
 };
 
 TEST_F(SSDEraseFunctionTest, EraseSuccess) {
-    EraseAndCheck(5,15);
+    EraseAndCheck(5,10);
 }
 
 TEST_F(SSDEraseFunctionTest, Only_Erase_LBA_Range) {
-    WriteNoneZeroValue(4, 16);
+    WriteNoneZeroValue(4, 12);
     
-    EraseAndCheck(5, 15);
+    EraseAndCheck(5, 10);
     EXPECT_EQ(ssd->read(4), 0x12345678);
     EXPECT_EQ(ssd->read(16), 0x12345678);
 }

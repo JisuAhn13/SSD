@@ -120,8 +120,8 @@ void SSD::write(unsigned int LBA, unsigned int Val) {
     outfile.close();
 }
 
-void SSD::erase(uint StartLBA, uint EndLBA) {
-    for (int LBA = StartLBA; LBA <= EndLBA; LBA++) {
-        this->write(LBA, 0x00000000);
+void SSD::erase(uint StartLBA, uint Size) {
+    for (int idx = 0; idx < Size; idx++) {
+        this->write(StartLBA+idx, 0x00000000);
     }
 }
