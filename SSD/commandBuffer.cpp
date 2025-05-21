@@ -87,6 +87,7 @@ bool CommandBuffer::fillCommandBufferWithFileNames()
 	for (const auto& fileName : bufferFileLists) {
 		if (bufferFileExists(fileName)) {
 			BufferCommand cmd = getCommandFromFile(fileName);
+
 			if (cmd.op == 'W' || cmd.op == 'E')
 				buffer.push_back(cmd);
 			fileChecker = true;
@@ -321,7 +322,11 @@ void CommandBuffer::mergeAlgorithm()
 		unsigned int end = originVec[i].firstData + originVec[i].secondData - 1;
 		size_t j = i + 1;
 
-		while (j < originVec.size() && originVec[j].op == 'E') {
+		while (j < originVec.size()) {
+			if (originVec[j].op != 'E') {
+				j += 1;
+				continue;
+			}
 			unsigned int nextStart = originVec[j].firstData;
 			unsigned int nextEnd = originVec[j].firstData + originVec[j].secondData - 1;
 
@@ -333,7 +338,7 @@ void CommandBuffer::mergeAlgorithm()
 				if (newSize <= 10) {
 					start = newStart;
 					end = newEnd;
-					++j;
+					originVec.erase(originVec.begin() + j);
 					continue;
 				}
 				else {
@@ -341,12 +346,12 @@ void CommandBuffer::mergeAlgorithm()
 				}
 			}
 			else {
-				break;
+				j += 1;
 			}
 		}
 
 		result.push_back({ 'E', start, end - start + 1 });
-		i = j;
+		i += 1;
 	}
 
 	this->copyBuffer(result);

@@ -63,7 +63,7 @@ protected:
 };
 
 TEST_F(CmdBufferFixture, ParamTestFromFile) {
-    for (int i = 1; i <= 25; ++i) {
+    for (int i = 1; i <= 50; ++i) {
         std::string idx = (i < 10 ? "0" : "") + std::to_string(i);
         std::string inputFile = "testcases/TC" + idx + "_input.txt";
         std::string expectFile = "testcases/TC" + idx + "_expected.txt";
