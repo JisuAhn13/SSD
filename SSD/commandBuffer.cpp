@@ -223,20 +223,22 @@ void CommandBuffer::fileWrite() {
 	std::string baseDir = "buffer";
 	std::string filePath;
 
-	this->clearDir();
+	clearDir();
 
 	for (int idx = 1; idx <= this->buffer.size(); idx++) {
-		filePath = baseDir + "\\" + std::to_string(idx) + "_" + this->buffer[idx - 1].op + "_"
-			+ std::to_string(this->buffer[idx - 1].firstData) + "_";
+		const BufferCommand cmd = this -> buffer[idx - 1];
 
-		if (this->buffer[idx - 1].op == 'E') {
-			filePath += std::to_string(this->buffer[idx - 1].secondData);
+		filePath = baseDir + "\\" + std::to_string(idx) + "_";
+		filePath += std::string(1, cmd.op) + "_" + std::to_string(cmd.firstData) + "_";
+
+		if (cmd.op == 'E') {
+			filePath += std::to_string(cmd.secondData);
 		}
 		else {
 			std::ostringstream oss;
 			oss << std::uppercase
 				<< std::hex
-				<< this->buffer[idx - 1].secondData;
+				<< cmd.secondData;
 
 			filePath += oss.str();
 		}
@@ -244,9 +246,6 @@ void CommandBuffer::fileWrite() {
 
 		if (!fileExists(filePath)) {
 			std::ofstream outFile(filePath);
-			if (outFile) {
-				outFile.close();
-			}
 		}
 	}
 
@@ -255,12 +254,6 @@ void CommandBuffer::fileWrite() {
 
 		if (!fileExists(filePath)) {
 			std::ofstream outFile(filePath);
-			if (outFile) {
-				outFile.close();
-			}
-			else {
-				std::exception();
-			}
 		}
 	}
 }
