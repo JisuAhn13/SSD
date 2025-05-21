@@ -4,10 +4,14 @@
 #include <regex>
 
 const std::string output_filename = "ssd_output.txt";
+const std::string op_read = "R";
+const std::string op_write = "W";
+const std::string op_erase = "E";
+const std::string op_flush = "F";
 
-std::vector<std::string> VALID_CMD{ "W", "R", "E", "F" };
+std::vector<std::string> VALID_CMD{ op_write, op_read, op_erase, op_flush };
 
-void writeOutputFile()
+void CommandChecker::writeOutputFile()
 {
 	std::ofstream fs;
 	fs.open(output_filename);
@@ -130,15 +134,15 @@ bool CommandChecker::executeErase(char* argv[])
 	std::string lba = std::string(argv[2]);
 	std::string size = std::string(argv[3]);
 
-	int start_lba = std::stoi(lba);
-	int size_lba = std::stoi(size);
-	int end_lba = start_lba + size_lba - 1;
-
 	if (isValidRange(lba, size) == false) {
 		return false;
 	}
 
-	EraseCommand cmd{ (unsigned int)start_lba, (unsigned int)size_lba };
+	int start_lba = std::stoi(lba);
+	int size_lba = std::stoi(size);
+	int end_lba = start_lba + size_lba - 1;
+
+	EraseCommand cmd{ (unsigned int)start_lba, (unsigned int)end_lba };
 	cmd.execute();
 
 	return true;
@@ -175,22 +179,6 @@ bool CommandChecker::executeWrite(char* argv[])
 
 	WriteCommand cmd{ lba_val, addr_val };
 	cmd.execute();
-
-	return true;
-}
-
-bool CommandChecker::isValidRange(char* argv[])
-{
-	std::string op = std::string(argv[1]);
-	if (op == op_flush) {
-		return true;
-	}
-
-	std::string lba = std::string(argv[2]);
-	int lba_value = stoi(lba);
-	if (lba_value < 0 || lba_value > 99) {
-		return false;
-	}
 
 	return true;
 }
