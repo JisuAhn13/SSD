@@ -1,52 +1,53 @@
 #pragma once
 #include <string>
-#include "SSD_func.h"
 #include "commandBuffer.h"
 
 class Command {
 public:
-	explicit Command(unsigned int lba) : __lba(lba)
+	explicit Command()
 	{
 	}
 	virtual void execute() = 0;
-
-protected:
-	unsigned int __lba;
 };
 
 class ReadCommand : public Command {
 public:
-	explicit ReadCommand(unsigned int lba = 0) : Command(lba)
-	{
-	}
-	void execute() override;
-};
-
-class WriteCommand : public Command {
-public:
-	explicit WriteCommand(unsigned int lba = 0, unsigned int addr = 0) : Command(lba), __addr(addr)
+	explicit ReadCommand(unsigned int lba = 0)
 	{
 	}
 	void execute() override;
 
 private:
+	unsigned int __lba;
+};
+
+class WriteCommand : public Command {
+public:
+	explicit WriteCommand(unsigned int lba = 0, unsigned int addr = 0) : __lba(lba), __addr(addr)
+	{
+	}
+	void execute() override;
+
+private:
+	unsigned int __lba;
 	unsigned int __addr;
 };
 
 class EraseCommand : public Command {
 public:
-	explicit EraseCommand(unsigned int lba = 0, unsigned int size = 0) : Command(lba), __size(size)
+	explicit EraseCommand(unsigned int lba = 0, unsigned int size = 0) : __lba(lba), __size(size)
 	{
 	}
 	void execute() override;
 
 private:
+	unsigned int __lba;
 	unsigned int __size;
 };
 
 class FlushCommand : public Command {
 public:
-	explicit FlushCommand() : Command(0)
+	explicit FlushCommand()
 	{
 	}
 
