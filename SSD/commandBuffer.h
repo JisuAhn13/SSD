@@ -45,6 +45,7 @@ public:
     void pushCMD(const BufferCommand cmd);
     void clearVec();
     void clearDir();
+    int getBufSize();
     void copyBuffer(std::vector<BufferCommand> buf);
     void fileWrite();
     void eraseAlgorithm();

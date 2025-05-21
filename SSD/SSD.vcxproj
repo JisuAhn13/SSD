@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CMDoptimizer_test.cpp" />
     <ClCompile Include="commandBuffer.cpp" />
     <ClCompile Include="commandBuffer_Test.cpp" />
     <ClCompile Include="CommandChecker.cpp" />
