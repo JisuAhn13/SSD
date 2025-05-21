@@ -59,7 +59,12 @@ BufferCommand  CommandBuffer::getCommandFromFile(std::string fileName) {
 			ret.firstData = static_cast<uint32_t>(std::stoul(token));
 			break;
 		case 3:
-			ret.secondData = static_cast<uint32_t>(std::stoul(token, nullptr, 16));
+			if (ret.op == 'W') {
+				ret.secondData = static_cast<uint32_t>(std::stoul(token, nullptr, 16));
+			}
+			else if (ret.op == 'E') {
+				ret.secondData = static_cast<uint32_t>(std::stoul(token));
+			}
 			break;
 		}
 		tokenIndex++;
