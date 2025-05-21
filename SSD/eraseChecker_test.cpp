@@ -24,7 +24,6 @@ protected:
             EXPECT_EQ(ssd->read(lba), 0x00000000);
         }
     }
-
 };
 
 TEST_F(SSDEraseFunctionTest, EraseSuccess) {
