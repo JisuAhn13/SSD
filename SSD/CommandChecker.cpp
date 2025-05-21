@@ -240,7 +240,7 @@ void ReadCommand::execute()
 {
 	CommandBuffer buffer;
 	BufferCommand cmd{ 'R', __lba, 0 };
-	buffer.enqueue(cmd);;
+	buffer.enqueue(cmd);
 }
 
 void WriteCommand::execute()
