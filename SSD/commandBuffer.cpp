@@ -342,7 +342,7 @@ void CommandBuffer::mergeAlgorithm()
 					continue;
 				}
 				else {
-					break;
+					j += 1;
 				}
 			}
 			else {
